@@ -1,0 +1,16 @@
+*{font-family:Microsoft Yahei,Arial}
+@font-face {
+  font-family: 'fontnameRegular';
+src: url('../font/DINbeMed.ttf');
+}
+@font-face {
+ font-family: 'fontnameUnidreamLED';
+ src: url('../font/UnidreamLED.ttf')format("truetype"),
+      url('../font/UnidreamLED.otf')format("otf"),
+      url('../font/UnidreamLED.eot')format("eot"),
+      url('../font/UnidreamLED.woff')format("woff"),
+      url('../font/UnidreamLED.woff2')format("woff2"),
+      url('../font/UnidreamLED.svg')format("svg");
+
+}
+
