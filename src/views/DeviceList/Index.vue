@@ -3,16 +3,15 @@
 		<el-header>
 			<!--标头-->
 			<div class="vision_title">
-				<!-- <span @click="enterIndexPage">北京三一视觉考勤</span> -->
 				<div @click="$router.push('/OverView')"
-				style="cursor:pointer;position:absolute;top:70px;left:20px;width:88px;height:39px;z-index:10"
-				><img src="../../assets/images/common_back.png"></div>				
-				<!-- <span>三一北京产业园数据</span> -->
-				<span>{{this.companyName}}设备数据系统</span>
+					style="cursor:pointer;position:absolute;top:70px;left:20px;width:88px;height:39px;z-index:10"
+				>
+					<img src="../../assets/images/common_back.png">
+				</div>				
+				<span>{{this.companyName}}设备数据互联</span>
 			</div>
 			<!--右上角时间-->
 			<div class="control">
-				<!-- <div class="button" @click="enterIndexPage('/HomeGuideDevice')"></div> -->
 			</div>
 		</el-header>
 		
@@ -30,7 +29,12 @@
 					</div>
 					<el-scrollbar class="message">
 						<div class="lookBox">
-							<div :class="{lookBox_item:true,active:index===key}" @click="companyClick(item)" v-for=" (item , key) in boardList" :key="key">
+							<div
+								class="lookBox_item"
+								v-for="item in boardList"
+								:key="item.id"
+								@click="companyClick(item)"
+							>
 								<div class="lookBox_bottom">
                   <div style="text-align: center">
                     <img v-show="item.machineStatus === 1 ? true : false" src="./images/normal.png" alt="">
@@ -72,26 +76,11 @@
 		data() {
 			return {
 				currentTime: '', // 系统时间
-				companyCode: '0402', // 子公司编码
-				companyName: '', // 子公司名字
+				companyCode: '0701', // 子公司编码
+				companyName: '三一德力佳', // 子公司名字
 				type: '', // 类型 01 工艺，02 加工中心 
 				typeCode: '', // 类型 01 工艺，02 加工中心 (值)
-				index: 0,
-				
 				boardList: [], //看板数组
-				
-
-				/* 
-				onLineTotalHour: '', //在线时长
-				chartData: {}, //上部echarts,
-				onLineXdata: [],
-				onLineYdata: [],
-				onLineDayXdata: [],
-				onLineDayYdata: [],
-				onLineDayLvdata: [],
-				clockaColor: ['#2EC13C', '#36EDFF'],
-				clockbColor: ['#FE7600', '#FFC54C'],
-				clockcColor: ['#0089FF', '#0089FF'] */
 			};
 		},
 		mounted() {
@@ -119,7 +108,7 @@
 			},
 			// 点击每一项进入DeviceConnect.vue页面
 			companyClick(item) {
-        this.$router.replace({name:'DeviceConnect',params:{deviceInfoArr:item}})
+        this.$router.replace({name:'DeviceDetail',params:{deviceInfoArr:item}})
         localStorage.setItem('deviceID',JSON.stringify(item))
         /*获取时*/
         // this.deviceInfoArrData = this.$route.params.deviceInfoArr
@@ -148,7 +137,6 @@
 				}
 				if (res && res.code === 200) {
 					this.boardList = res.data
-					// this.companyName = res.data[0].companyName
 				}
 			},
 
@@ -174,12 +162,13 @@
 			position: relative;
 
 			.vision_title {
-				font-size: 0.44rem;
+				font-size: 0.42rem;
 				color: #fff;
 				font-weight: bold;
 				height: 100%;
+				padding-top:1%;
 				span {
-					margin-left: 0.15rem;
+					// margin-left: 0.15rem;
 				}
 			}
 			.time {

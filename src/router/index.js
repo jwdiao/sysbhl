@@ -4,31 +4,59 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 const router = new Router({
+  mode: 'history',
+  base: '/sanysbhlreport/',
   routes: [
     {
       path: '/',
       redirect: '/OverView'
     },
+    /* {
+      path: '/OverView',
+      name: 'OverView',
+      component: () => import('../views/OverView/Index.vue') // 设备概览
+    }, */
     {
       path: '/OverView',
       name: 'OverView',
-      component: () => import('../views/OverView/OverView.vue') // 设备概览
+      component: () => import('../views/OverViewV2/Index.vue') // 设备概览
     },
     {
-      path: '/DeviceHome',
-      name: 'DeviceHome',
-      component: () => import('../views/DeviceConnect/DeviceHome.vue')
+      path: '/DeviceList', // 设备列表
+      name: 'DeviceList',
+      component: () => import('../views/DeviceList/Index.vue') // 没统一改标题
+      // component: () => import('../views/DeviceList/Index-updateHead.vue') // 统一改标题后
     },
     {
-      path: '/DeviceConnect',
-      name: 'DeviceConnect',
-      component: () => import('../views/DeviceConnect/index.vue')
+      path: '/DeviceDetail', // 设备详情
+      name: 'DeviceDetail',
+      component: () => import('../views/DeviceDetail/Index.vue')
     },
-    // {
-    //   path: '/DeviceListScreen',
-    //   name: 'DeviceListScreen',
-    //   component: () => import('../views/OverView/DeviceListScreen.vue')
-    // },
+    {
+      path: '/DeviceFailure', // 设备故障
+      name: 'DeviceFailure',
+      component: () => import('../views/DeviceFailure/Index.vue')
+    },
+    {
+      path: '/Statistics', // 设备统计
+      name: 'Statistics',
+      component: () => import('../views/Statistics/Index.vue')
+    },
+    {
+      path: '/Test02',
+      name: 'Test02',
+      component: () => import('../views/Test/Index2.vue')
+    },
+    {
+      path: '/Template',
+      name: 'Template',
+      component: () => import('../views/Template/Index.vue')
+    },
+    {
+      path: '/Template2',
+      name: 'Template2',
+      component: () => import('../views/Template/Index2.vue')
+    },
   ]
 })
 

@@ -31,6 +31,10 @@
             <span class="value">{{item.liyongLv}}%</span>
           </li>
           <li>
+            <span class="label">计划完成率</span>
+            <span class="value">{{item.planFinishRate}}%</span>
+          </li>
+          <li>
             <span class="label">总耗电量</span>
             <span class="value">{{item.elcPower}} kw•h</span>
           </li>
@@ -93,6 +97,7 @@ export default {
            * 故障率 = 故障数 / 总数
            * 利用率 = 开机率 * 作业率
            * 总耗电量 = 消耗电能 / 总数 
+           * 计划完成率 = 完成工件数 / 计划工件数
            */
 
           const idleTime = item.idleTime || 0 // 待机时间（秒）
@@ -106,6 +111,9 @@ export default {
 
           const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
           const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
+
+          const planProcedureNum = item.planProcedureNum || 0 // 计划工件数
+          const overProcedureNum = item.overProcedureNum || 0 // 完成工件数
 
           // 开机率（开机时间/自然时间）
           let bootRate = 0
@@ -146,6 +154,13 @@ export default {
           } else if (item.firstGroupCode === '08') {
             workCenterName = '调试'
           }
+
+          // 计划完成率
+          let planFinishRate = 0
+          if (overProcedureNum) {
+            planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
+          }
+
           let obj = {
             firstGroupCode: item.firstGroupCode,
             workCenterName,
@@ -154,7 +169,8 @@ export default {
             bootRate,
             workRate,
             alarmRate,
-            liyongLv
+            liyongLv,
+            planFinishRate
           }
           // 开机率
           this.list.push(obj)
@@ -212,13 +228,13 @@ export default {
         margin-top:-15px;
       }
       li{
-        margin-top:10px;
+        margin-top:5px;
         &:first-child{
           margin-top:0;
         }
       }
       
-      .label{color:#cccccc;width:100px;text-align: right;display: inline-block;}
+      .label{color:#cccccc;width:110px;text-align: right;display: inline-block;}
       .value{color:#02c9fc;margin-left:10px;}
     }
   }

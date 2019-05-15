@@ -1,9 +1,9 @@
 import axios from 'axios'
 axios.defaults.timeout = 100000
 // import { Message } from 'element-ui'
-import {
-  Message
-} from 'element-ui';
+// import {
+//   Message
+// } from 'element-ui';
 // import store from '@/store'
 
 

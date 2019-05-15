@@ -4,11 +4,10 @@
     <!-- 头部 start -->
     <div class="sbhl_top">
       <div class="sbhl_imgText" @click="showCompanyDialog = true">
-        {{this.companyName}}设备数据系统        
+        {{this.companyName}}设备数据互联       
       </div>
       <!--右上角时间-->
       <em class="time" v-text="currentTime"></em>
-      <!-- <div class="button" @click="enterIndexPage('/')"></div> -->
     </div>
     <CompanyDialog
       :showflag="showCompanyDialog" 
@@ -23,7 +22,7 @@
         <div class="sbhl_left_top">
           <div class="sbhltitle">
             设备总数 :
-            <span style="font-size: 0.3rem">{{deviceData.totalNum||0}}</span>
+            <span style="font-size: 0.3rem">{{deviceData.totalNum}}</span>
             <em> 台</em>
           </div>
           <div class="statusList">
@@ -32,7 +31,7 @@
                 <p class="statusTitle">作业</p>
                 <div class="statusDiv">
                   <img src="../../assets/images/greenPoint.png" alt="">
-                  <span class="statusCount"> {{deviceData.runNum||0}}</span>
+                  <span class="statusCount"> {{deviceData.runNum}}</span>
                   <em class="statusDanw">台</em>
                 </div>
               </li>
@@ -40,7 +39,7 @@
                 <p class="statusTitle">待机</p>
                 <div class="statusDiv">
                 <img src="../../assets/images/yellowPoints.png" alt="">
-                <span class="statusCount"> {{deviceData.idleNum||0}}</span>
+                <span class="statusCount"> {{deviceData.idleNum}}</span>
                 <em class="statusDanw">台</em>
                 </div>
               </li>
@@ -48,7 +47,7 @@
                 <p class="statusTitle">故障</p>
                 <div class="statusDiv">
                 <img src="../../assets/images/redPoint.png" alt="">
-                <span class="statusCount"> {{deviceData.alarmNum||0}}</span>
+                <span class="statusCount"> {{deviceData.alarmNum}}</span>
                 <em class="statusDanw">台</em>
                 </div>
               </li>
@@ -56,7 +55,7 @@
                 <p class="statusTitle">关机</p>
                 <div class="statusDiv">
                 <img src="../../assets/images/garyPoint.png" alt="">
-                <span class="statusCount"> {{deviceData.shutDownNum||0}}</span>
+                <span class="statusCount"> {{deviceData.shutDownNum}}</span>
                 <em class="statusDanw">台</em>
                 </div>
               </li>
@@ -67,7 +66,7 @@
                 <p class="statusNum">开机小时数</p>
                 <div class="echartsImg open" ref="openID">
                   <div>
-                    <p class="numPoint">{{((deviceData.idleTime+deviceData.runTime)/3600).toFixed(2)||0}}</p> <!--开机小时数 = 作业时间+空闲时间-->
+                    <p class="numPoint">{{deviceData.startUpHour}}</p> <!--开机小时数 = 作业时间+空闲时间-->
                     <em>单位:h</em>
                   </div>
                 </div>
@@ -76,7 +75,7 @@
                 <p class="statusNum">作业小时数</p>
                 <div class="echartsImg runHourNum" ref="runHourNum">
                   <div>
-                    <p class="numPoint">{{(deviceData.runTime/3600).toFixed(2)||0}}</p>
+                    <p class="numPoint">{{deviceData.workHour}}</p>
                     <em>单位:h</em>
                   </div>
                 </div>
@@ -139,15 +138,14 @@
   import moment from 'moment'
   import OverViewList from './OverViewList.vue'
   import CompanyDialog from '@/components/CompanyDialog.vue'
-  import http from '../../api/http'
   import {reqCountDeviceMain} from '../../api'
-import { clearInterval, setInterval } from 'timers';
+
   export default {
     name: 'OverView',
     data() {
       return {
-        companyCode: '0301', // 选中的公司code
-        companyName: '北京桩机', // 选中的公司name
+        companyCode: '0701', // 选中的公司code
+        companyName: '三一德力佳', // 选中的公司name
         showCompanyDialog: false, // 是否显示顶部选择子公司
         orgCode:'',   //选中的组织代码
         refreshDataIdTime: '', // 时间刷新
@@ -200,18 +198,6 @@ import { clearInterval, setInterval } from 'timers';
       this.refreshDataIdTime = setInterval(() => {
         this.currentTime = this.getCurrentDateTime()
       },1000)
-      this.refreshDataIdAll = setInterval(() => {
-        /* //01：左上部分数据
-        this.getDeviceAllData(this.companyCode,this.orgCode,'01')
-        //10：代表日统计
-        this.getDeviceAllData(this.companyCode,this.orgCode,'10')
-        //11：代表按月统计
-        this.getDeviceAllData(this.companyCode,this.orgCode,'11')
-        //12 ：代表 按年统计
-        this.getDeviceAllData(this.companyCode,this.orgCode,'12') */
-      }, 10000)
-
-
 
       // 从localStory里面取选中的公司
       const sbhlSelectedCompanyStr = localStorage.getItem('sbhl-OverView-SelectedCompany')
@@ -219,10 +205,11 @@ import { clearInterval, setInterval } from 'timers';
         const sbhlSelectedCompanyObj = JSON.parse(sbhlSelectedCompanyStr)
         this.companyCode = sbhlSelectedCompanyObj.value; // 公司编码
         this.companyName = sbhlSelectedCompanyObj.label // 公司名字
+      } else {
+        localStorage.setItem('sbhl-OverView-SelectedCompany',JSON.stringify({label:this.companyName,value:this.companyCode}))
       }
 
       this.$store.commit('changeOverViewSelectedCompanyMut',JSON.stringify({label:this.companyName,value:this.companyCode}))
-      localStorage.setItem('sbhl-OverView-SelectedCompany',JSON.stringify({label:this.companyName,value:this.companyCode}))
 
       // 右侧====echarts图
       this.sbhlDayEcharts = echarts.init(document.getElementById('sbhl-day-echarts'));
@@ -242,10 +229,20 @@ import { clearInterval, setInterval } from 'timers';
       this.getDeviceAllData(this.companyCode,this.orgCode,'11')
       //12 ：代表 按年统计
        this.getDeviceAllData(this.companyCode,this.orgCode,'12')
+       
       //给window对象绑定resize事件
       window.addEventListener('resize', this.handleResize);
 
-
+      this.refreshDataIdAll = setInterval(() => {
+        //01：左上部分数据
+        this.getDeviceAllData(this.companyCode,this.orgCode,'01')
+        //10：代表日统计
+        this.getDeviceAllData(this.companyCode,this.orgCode,'10')
+        //11：代表按月统计
+        this.getDeviceAllData(this.companyCode,this.orgCode,'11')
+        //12 ：代表 按年统计
+        this.getDeviceAllData(this.companyCode,this.orgCode,'12')
+      }, 10000)
       
     },
     methods: {
@@ -256,9 +253,66 @@ import { clearInterval, setInterval } from 'timers';
           case '01' :  //左上部分所有数据
             const res01 = await reqCountDeviceMain(companyCode, orgCode, requestType,currentDateStr)
             if(res01&&res01.code===200){
-              this.deviceData = res01.data
-              this.renderEchartsCircleHLGTree(this.deviceData) //3个率echarts
+              const resData = res01.data
+
+              /**
+               * 逻辑规则：
+               * 开机时间 = 作业时间 + 待机时间
+               * 开机率 = 开机时间 / 自然时间
+               * 作业率 = 作业时间 / 开机时间
+               * 故障率 = 故障数 / 总数
+               * 利用率 = 开机率 * 作业率
+               * 总耗电量 = 消耗电能 / 总数 
+               */
+
+              const idleTime = resData.idleTime || 0 // 待机时间（秒）
+              const runTime = resData.runTime || 0 // 作业时间（秒）
+              const naturalTime = resData.naturalTime || 0 // 自然时间（秒）
+              const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
+
+              const alarmNum = resData.alarmNum || 0 // 故障数
+              const totalNum = resData.totalNum || 0 // 总数
+              const elcPower = resData.elcPower || 0 // 总耗电量
+
+              const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
+              const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
+              const bootRate = (startUpHour/naturalTimeHour)*100 > 100 ? 100 : (startUpHour/naturalTimeHour*100).toFixed(2) // 开机率
+              const workRate = (workHour/startUpHour*100) > 100 ? 100: (workHour/startUpHour*100).toFixed(2) // 作业率
+              const alarmRate = (alarmNum/totalNum)*100 > 100 ? 100 :(alarmNum/totalNum*100).toFixed(2) // 故障率
+
+              let deviceDataObj = {
+                totalNum: totalNum, // 设备总数
+                runNum: resData.runNum || 0, // 作业台数
+                idleNum: resData.idleNum || 0, // 待机台数
+                alarmNum: alarmNum, // 故障数
+                shutDownNum: resData.shutDownNum || 0, // 关机
+                elcPower: elcPower || 0, // 总耗电量
+                startUpHour: startUpHour, // 开机小时数
+                workHour: workHour, // 作业小时数
+                bootRate: bootRate, // 开机率
+                workRate: workRate, // 作业率
+                alarmRate: alarmRate, // 故障率
+              }
+              this.deviceData = {
+                ...deviceDataObj
+              }
+              
+            } else {
+              this.deviceData = {
+                totalNum: 0, // 设备总数
+                runNum: 0, // 作业台数
+                idleNum: 0, // 待机台数
+                alarmNum: alarmNum, // 故障数
+                shutDownNum: 0, // 关机
+                elcPower: 0, // 总耗电量
+                startUpHour: 0, // 开机小时数
+                workHour: 0, // 作业小时数
+                bootRate: 0, // 开机率
+                workRate: 0, // 作业率
+                alarmRate: 0, // 故障率
+              }
             }
+            this.renderEchartsCircleHLGTree(this.deviceData) //3个率echarts
             break;
           case '10' : //右侧本日
             const res10 = await reqCountDeviceMain(companyCode, orgCode, requestType,currentDateStr)
@@ -289,7 +343,7 @@ import { clearInterval, setInterval } from 'timers';
                 newArr11.push(item)
               })
               this.chartsBData.powerUseArr = newArr11; // 能耗
-              console.log('newArr11:',newArr11)
+              // console.log('newArr11:',newArr11)
               this.renderEchartsB(myThisMonth, this.chartsBData)
             }
             break;
@@ -305,7 +359,7 @@ import { clearInterval, setInterval } from 'timers';
                 item<0 ? item = 0 : item
                   newArr12.push(item)
               })
-              console.log('newArr12:',newArr12)
+              // console.log('newArr12:',newArr12)
               this.chartsAData.powerUseArr = newArr12; // 能耗
               this.renderEchartsA(myThisYear, this.chartsAData)
             }
@@ -882,52 +936,41 @@ import { clearInterval, setInterval } from 'timers';
       },
       /*左上3个率--渲染*/
       renderEchartsCircleHLGTree (carEchartsData) {
-        let kaijiLv = ((carEchartsData.runTime+carEchartsData.idleTime)/carEchartsData.naturalTime)*100 > 100?100:((carEchartsData.runTime+carEchartsData.idleTime)/carEchartsData.naturalTime)*100
         // 开机率
         var nbcllvEcharts = document.getElementById('startLV')
         this.neibuRateObj = {
           name: '开机率',
-          // color: '#0097ff',
           color: {
             startColor: '#ff7905',
             endColor: '#ffbf46'
           },
-          value: kaijiLv.toFixed(2)
-          // value: Math.floor((carEchartsData.runTime+carEchartsData.idleTime)/carEchartsData.naturalTime*100*100)/100 >100 ? 100 : Math.floor((carEchartsData.runTime+carEchartsData.idleTime)/carEchartsData.naturalTime*100*100)/100,
+          value: carEchartsData.bootRate
         }
         this.renderClock(nbcllvEcharts, this.neibuRateObj)
 
         // 作业率
         var wbcllvEcharts = document.getElementById('runLV')
-        let zuoyeLv = carEchartsData.runTime/(carEchartsData.runTime+carEchartsData.idleTime)*100 > 100 ? 100: carEchartsData.runTime/(carEchartsData.runTime+carEchartsData.idleTime)*100
         this.waibuRateObj = {
           name: '作业率',
-          // color: '#ff8f19',
           color: {
             startColor: '#0090ff',
             endColor: '#00e2ff'
           },
-          value: zuoyeLv.toFixed(2)
-          // value:Math.floor(carEchartsData.runTime/carEchartsData.naturalTime*100*100)/100 >100 ? 100 : Math.floor(carEchartsData.runTime/carEchartsData.naturalTime*100*100)/100 ,
+          value: carEchartsData.workRate
         }
         this.renderClock(wbcllvEcharts, this.waibuRateObj)
 
         // 故障率
         var hclvEcharts = document.getElementById('problemLV')
-        let guzhangLv = (carEchartsData.alarmNum/carEchartsData.totalNum)*100 > 100 ? 100 :(carEchartsData.alarmNum/carEchartsData.totalNum)*100
         this.huocheRateObj = {
           name: '故障率',
-          // color: '#0097ff',
           color: {
             startColor: '#FA4551',
             endColor: '#747FFF'
           },
-          value: guzhangLv.toFixed(2)
-          // value: Math.floor(carEchartsData.alarmNum/carEchartsData.totalNum*100*100)/100 > 100 ? 100 : Math.floor(carEchartsData.alarmNum/carEchartsData.totalNum*100*100)/100,/*parseFloat(this.info.onWorkRate) > 100 ? '100' : this.info.onWorkRate*/
+          value: carEchartsData.alarmRate
         }
         this.renderClock(hclvEcharts, this.huocheRateObj)
-
-
       },
       /*左上3个率--echsrts*/
       renderClock (dom, data) {
@@ -1004,23 +1047,6 @@ import { clearInterval, setInterval } from 'timers';
           ele.resize()
         })
         this.screenHeight = window.innerHeight
-        // console.log('获取runHourNum高度:',this.$refs.runHourNum.offsetHeight)
-        /*if(this.screenHeight>1000){
-          //设置高度
-          this.$refs.openID.style.backgroundSize = '83% 100%'
-          this.$refs.runHourNum.style.backgroundSize = '83% 100%'
-          this.$refs.startID.style.backgroundSize = '83% 100%'
-          this.$refs.runLV.style.backgroundSize = '83% 100%'
-          this.$refs.problem.style.backgroundSize = '83% 100%'
-          this.$refs.totalE.style.backgroundSize = '83% 100%'
-        }else{
-          this.$refs.openID.style.backgroundSize = '65% 100%'
-          this.$refs.runHourNum.style.backgroundSize = '65% 100%'
-          this.$refs.startID.style.backgroundSize = '65% 100%'
-          this.$refs.runLV.style.backgroundSize = '65% 100%'
-          this.$refs.problem.style.backgroundSize = '65% 100%'
-          this.$refs.totalE.style.backgroundSize = '65% 100%'
-        }*/
       },
     },
     beforeDestroy() {
@@ -1045,7 +1071,7 @@ import { clearInterval, setInterval } from 'timers';
     overflow: hidden;
 
     .sbhl_imgText {
-      font-size: 0.44rem;
+      font-size: 0.42rem;
       color: #fff;
       font-weight: bold;
       text-align: center;
@@ -1263,6 +1289,7 @@ import { clearInterval, setInterval } from 'timers';
 
     /*右侧三个eharts结束*/
 
+  
   }
 
 

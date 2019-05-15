@@ -6,7 +6,11 @@
 
 
 <style lang="scss">
-@import './assets/css/common.scss';
+// @import './assets/css/common.scss';
 @import './assets/css/elementCustom.scss';
-@import './assets/css/font.css';
+@import './assets/css/font.css'; // 时间字体
+
+
+
+
 </style>

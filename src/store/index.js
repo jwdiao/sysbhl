@@ -5,10 +5,10 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    sbhlOverViewSelectedCompany: '' // overview页面选中的子公司
+    sbhlOverViewSelectedCompany: '' // 选中的子公司 -- overview页面
   },
   mutations: {
-    // 改变加工中心
+    // 改变选中的子公司 -- overview页面
     changeOverViewSelectedCompanyMut (state, val){
       state.sbhlOverViewSelectedCompany = val
     },

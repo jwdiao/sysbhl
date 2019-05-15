@@ -1,40 +1,5 @@
 .common-pagination{
   text-align: right;
-	/* text-align: right;
-	/deep/ .el-pagination{
-		color:#2389d9;
-	}
-	/deep/ .el-input__inner{
-		border:1px solid #255985;
-		background-color:#142e50;
-		color:#4fb7ff;
-	}
-	/deep/ .el-pager li{
-		background-color:#142d54;
-	}
-	/deep/ .btn-prev {
-		color:#2389d9;
-		background-color:#142e50;
-	}
-	/deep/ .btn-next {
-		color:#2389d9;
-		background-color:#142e50;
-  }
-  .el-pagination button:disabled{
-    color:#2389d9;
-		background-color:#142e50;
-  }
-	/deep/ .el-pagination__total{
-		color:#4fb7ff;
-	}
-	/deep/ .el-pagination__jump{
-		color:#4fb7ff;
-  }
-  /deep/ .el-pager li.btn-quicknext, .el-pager li.btn-quickprev{
-    color:#4fb7ff;
-  } */
-
-
   span.el-pagination__total {
     color: #2b82d3;
   }
@@ -115,3 +80,60 @@
 .el-input__icon {
     line-height: 23px !important;
 }
+
+//日期start-----------------
+.el-input__inner{
+  background-color: rgba(44,149,240,.1);
+  border: 1px solid #285e8c;
+  color: #2f96ef;
+}
+.el-picker-panel{
+  background-color: rgba(9,20,40,0.9);
+  border: 1px solid #7ed9f1;
+}
+.el-date-table td.disabled div{
+  background-color: #0f1e38!important;
+}
+.el-date-table th{
+  border-bottom: solid 0px #ebeef5;
+}
+.el-date-picker__header-label,.el-date-table th,.el-date-table td.available{
+  color: #fff;
+}
+.el-date-table td.next-month, .el-date-table td.prev-month{
+  color:#858486;
+}
+.el-picker-panel__icon-btn{
+  color:#2ad1ed;
+}
+.el-date-picker__editor-wrap .el-input__inner{
+  background-color: rgba(49, 160, 255, 0.48) !important;
+  color: #ffffff;
+  border: 0px solid #dcdfe6;
+}
+.el-picker-panel__footer{
+  background-color: rgba(0,0,0,0);
+  border-top: 0px solid #e4e4e4;
+  .is-plain{
+    background-image: linear-gradient(to top, rgb(76, 221, 237), rgb(0, 136, 254));
+    border: 0px solid #dcdfe6;
+  }
+}
+.el-date-picker__editor-wrap .el-time-panel{
+  background-color: rgba(9,20,40,0.9);
+  .el-time-spinner__item{
+    color:#fff
+  }
+  .el-time-spinner__item:hover:not(.disabled):not(.active){
+    background-color: rgba(49, 160, 255, 0.48) !important;;
+  }
+}
+.el-time-panel__footer{
+  border-top: 0px solid #e4e4e4;
+  .cancel{
+    color:#fff
+  }
+}
+
+
+//日期end

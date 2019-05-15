@@ -2,7 +2,7 @@
 	<div class="device">
 		<div class="device_head">
 			<div class="leftInfo" @click="$router.push('/DeviceList')" style="cursor:pointer"><img src="../../assets/images/common_back.png"></div>
-			<div class="title">三一北京产业园数据</div>
+			<div class="title">{{companyName}}设备数据互联</div>
 			<div class="rightInfo">
 			</div>
 		</div>
@@ -15,19 +15,17 @@
 			<div class="device_main">
 				<div class="device_mainLeft">
 					<div class="device_leftTop">
-
 						<p class="name">{{deviceDataObj.machineName}}</p>
-              <div class="img">
-								<img src="../../assets/images/DeviceConnect_jc.png" style="width:80%;height:80%"/>
-							</div>
-              <div class="timeBox">
-                <span class="text" v-if="deviceDataObj.machineStatus==1" style="color:#1cf33c">&nbsp;作业</span>
-                <span class="text" v-if="deviceDataObj.machineStatus==2" style="color:#ffc31f">&nbsp;待机</span>
-                <span class="text" v-if="deviceDataObj.machineStatus==3" style="color:#484b4f">&nbsp;关机</span>
-                <span class="text" v-if="deviceDataObj.machineStatus==4" style="color:#fd0101">&nbsp;故障</span>
-                <span class="time">{{this.deviceDataObj.time}}</span>
-              </div>
-
+						<div class="img">
+							<img src="../../assets/images/DeviceConnect_jc.png" style="width:80%;height:80%"/>
+						</div>
+						<div class="timeBox">
+							<span class="text" v-if="deviceDataObj.machineStatus==1" style="color:#1cf33c">&nbsp;作业</span>
+							<span class="text" v-if="deviceDataObj.machineStatus==2" style="color:#ffc31f">&nbsp;待机</span>
+							<span class="text" v-if="deviceDataObj.machineStatus==3" style="color:#484b4f">&nbsp;关机</span>
+							<span class="text" v-if="deviceDataObj.machineStatus==4" style="color:#fd0101">&nbsp;故障</span>
+							<span class="time">{{deviceDataObj.time}}</span>
+						</div>
 					</div>
 					<div class="device_leftBottom">
 						<el-scrollbar style="height:100%;">
@@ -102,12 +100,6 @@
 										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -1rem" v-if="!deviceData.actFeed"><em>&nbsp;&nbsp;</em></li>
 										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -1rem" v-else><em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.actFeed)+ '&nbsp;' +  danwei }}</em></li>
 									</ul>
-									<!--<div class="centerContentDiv">
-                      <span class="centerContentDivSpan">命令进给率 <em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.fCode)}}</em></span>
-                    </div>
-                    <div class="centerContentDiv">
-                      <span class="centerContentDivSpan">实际进给率 <em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.actFeed)}}</em></span>
-                    </div>-->
 								</li>
 								<li class="centerContentLi">
 									<ul class="centerContentDiv" style="margin-bottom: -0.3rem;">
@@ -120,12 +112,6 @@
 										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -1rem" v-if="!deviceData.spinTmp2"></li>
 										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -1rem" v-else><em>&nbsp;&nbsp;&nbsp;{{deviceData.spinTmp2 !== '0.00' ?Math.floor(deviceData.spinTmp2)+'&nbsp;℃':'/'}}</em></li>
 									</ul>
-									<!-- <div class="centerContentDiv">
-                      <span class="centerContentDivSpan">主轴一温度 <em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.spinTmp1)}}</em></span>
-                    </div>
-                    <div class="centerContentDiv">
-                      <span class="centerContentDivSpan">主轴二温度 <em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.spinTmp2)}}</em></span>
-                    </div>-->
 								</li>
 
 							</ul>
@@ -133,50 +119,6 @@
 							<div class="bottomConent dljitem">
 								<ul class="bottomConentUl">
 									<!--bottom左侧-->
-									<!--<li class="bottomConentLi bottomConentLiLeft">
-                      <ul class="titleXYZ titleLeft">
-                        <li></li>
-                        <li>绝对坐标</li>
-                        <li>相对坐标</li>
-                        <li>机械坐标</li>
-                        <li>剩余距离</li>
-                      </ul>
-                      <ul class="titleXYZ titleConent">
-                        <li class="colorWhite">X</li>
-                        <li class="margin0">0</li>
-                        <li class="margin0">-1.02</li>
-                        <li class="margin0">-127.23</li>
-                        <li class="margin0">0.064</li>
-                      </ul>
-                      <ul class="titleXYZ titleConent">
-                        <li class="colorWhite" >Y</li>
-                        <li class="margin0">0</li>
-                        <li class="margin0">-1.02</li>
-                        <li class="margin0">-127.23</li>
-                        <li class="margin0">0.064</li>
-                      </ul>
-                      <ul class="titleXYZ titleConent">
-                        <li class="colorWhite">Z</li>
-                        <li class="margin0">0</li>
-                        <li class="margin0">-1.02</li>
-                        <li class="margin0">-127.23</li>
-                        <li class="margin0">0.064</li>
-                      </ul>
-                      <ul class="titleXYZ titleConent">
-                        <li class="colorWhite">C</li>
-                        <li class="margin0">0</li>
-                        <li class="margin0">-1.02</li>
-                        <li class="margin0">-127.23</li>
-                        <li class="margin0">0.064</li>
-                      </ul>
-                      <ul class="titleXYZ titleConent">
-                        <li class="colorWhite">B</li>
-                        <li class="margin0">0</li>
-                        <li class="margin0">-1.02</li>
-                        <li class="margin0">-127.23</li>
-                        <li class="margin0">0.064</li>
-                      </ul>
-                    </li>-->
 									<li class="BLeft">
 										<ul class="BLeftLine">
 											<li>
@@ -287,7 +229,6 @@
 							</div>
 						</div>
 						<div class="device_rightBottom-right">
-							<!-- <DianLiu /> -->
 							<EchartsLine />
 						</div>
 					</div>
@@ -304,64 +245,50 @@
 		machineConnectioninfo,
     reqJGLDanwei,
 	} from '../../api'
-	// import DianLiu from './DianLiu.vue'
 	import EchartsLine from './EchartsLine.vue'
 	export default {
 		name: 'DeviceConnect',
 		components: {
-			// DianLiu
 			EchartsLine
 		},
 		data() {
 			return {
-				//djw  start
-				deviceDataObj: {}, //首页传过来的数据
-				deviceData: {}, //请求返回数据
+				companyCode: '0701',
+				companyName: '三一德力佳',
+				deviceDataObj: {}, //首页传过来的设备名称和从接口获取的时间和设备状态
+				deviceData: {}, // 右上角设备参数信息
         danwei:'', //进给率 的单位
-				//djw  end
-				showCompany: false,
-				companyOpt: [{
-						id: '001',
-						title: '三一桩机'
-					},
-					{
-						id: '002',
-						title: '三一重能'
-					}
-				],
-				selectedCompany: '三一桩机',
 				progress: [
 					{
 						id: 1,
 						title: '作业',
-						percentage: 20,
+						percentage: 0,
 						color: '#25EE3D',
-						time: '09:32:33'
+						time: '00:00:00'
 					}, {
 						id: 2,
 						title: '待机',
-						percentage: 30,
+						percentage: 0,
 						color: '#FFC620',
-						time: '09:32:33'
+						time: '00:00:00'
 					},
 					{
 						id: 3,
 						title: '故障',
-						percentage: 40,
+						percentage: 0,
 						color: '#F50400',
-						time: '09:32:35'
+						time: '00:00:00'
 					}, {
 						id: 4,
 						title: '关机',
 						percentage: 0,
 						color: '#48494B',
-						time: '09:32:33'
+						time: '00:00:00'
 					}
 				],
 				echartsData: [{
 						value: 335,
 						name: '作业',
-
 					},
 					{
 						value: 310,
@@ -383,40 +310,38 @@
 			}
 		},
 		mounted() {
-			//jdw----start---->
-			// let deviceID = this.deviceDataObj.machineNo
-      let deviceObj = JSON.parse(localStorage.getItem('deviceID'))
-      this.deviceDataObj = deviceObj
-			let deviceID = deviceObj.machineNo
-      console.log('deviceID', this.deviceDataObj.machineName)
+			// 选中的子公司
+			const companyCodeStr = localStorage.getItem('sbhl-OverView-SelectedCompany')
+			this.companyCode = JSON.parse(companyCodeStr).value
+			this.companyName = JSON.parse(companyCodeStr).label
 
-      this.getDeviceParamsInfo(deviceID) // diao
+			const deviceInfoFromLocalstory = JSON.parse(localStorage.getItem('deviceID')) // 设备信息
+			const deviceID = deviceInfoFromLocalstory.machineNo // 设备id
+			this.deviceDataObj.machineName = deviceInfoFromLocalstory.machineName // 设备name
 
-      this.findMachineConnectioninfo(deviceID); // meng
+			this.getDeviceParamsInfo(deviceID) // 右上角设备参数信息
+			this.getJGLDanwei(deviceID) // 右上角--进给率单位
+
+      this.findMachineConnectioninfo(deviceID); // 右侧饼图和进度条数据
 			this.renderPie(document.getElementById('pie'), this.echartsData);
-			this.getJGLDanwei(this.deviceDataObj.machineNo)
-			window.addEventListener('resize', this.handleResize);
 
-      //jdw----end---->
+
+			window.addEventListener('resize', this.handleResize); // echarts图自适应
 
       this.IntervalId = setInterval(()=>{
-        this.getDeviceParamsInfo(deviceID)
+				this.getDeviceParamsInfo(deviceID)  // 右上角设备参数信息
+        this.getJGLDanwei(deviceID) // 右上角--进给率单位				
         this.findMachineConnectioninfo(deviceID);
-        this.getJGLDanwei(this.deviceDataObj.machineNo)
       },5000)
 
 		},
 		methods: {
-			//djw  start ------------------------------------->
-			//右上角设备参数信息
+			//----------------右上角设备参数信息  start -------------->
 			async getDeviceParamsInfo(deviceID) {
         const res = await reqDeviceRightList(deviceID)
 				if (res && res.code === 200) {
-          // this.deviceData = res.data.data
           if(res.data!==null){
             this.deviceData = res.data
-              // console.log('this.deviceData:',this.deviceData)
-
             this.deviceData.mainPgm === '-100000.0F' ? this.deviceData.mainPgm = ' ' : this.deviceData.mainPgm
             this.deviceData.curPgm === '-100000.0F' ? this.deviceData.curPgm = ' ' : this.deviceData.curPgm
             this.deviceData.mode === '-100000.0F' ? this.deviceData.mode = ' ' : this.deviceData.mode
@@ -469,8 +394,6 @@
               remDist:[],
             }
           }
-          // console.log('res.data.data:', res.data.data)
-          /* */
 
 				}
 			},
@@ -482,10 +405,9 @@
           }
         }
       },
-			//djw  end ------------------------------------->
-			/*
-			  mfs start
-			*/
+			//-----------------右上角设备参数信息 end ------------->
+
+			// 饼图echarts
 			renderPie(dom, data) {
 				var myChart = echarts.init(dom)
 				var option = null
@@ -558,9 +480,7 @@
 					myChart.setOption(option, true);
 				}
 			},
-			handleResize() {
-				echarts.init(document.getElementById('pie')).resize();
-			},
+			// 饼图echarts和进度条数据 和 左上角设备工作状态和时间
 			async findMachineConnectioninfo(deviceID) {
 				const dateStr = moment(new Date()).format('YYYY-MM-DD');
 				const params = {
@@ -568,47 +488,49 @@
 					date: dateStr
         }
         const res = await machineConnectioninfo(params);
-				this.progress[0].percentage = Math.floor(res.data.startupTime * 100 * 100) / 100
-				this.progress[0].time = this.countTime(res.data.startupTimeMinute) || 0
-				this.progress[1].percentage = Math.floor(res.data.standbyTime * 100 * 100) / 100
-				this.progress[1].time = this.countTime(res.data.standbyTimeMinute)
-				this.progress[2].percentage = Math.floor(res.data.failureTime * 100 * 100) / 100
-				this.progress[2].time = this.countTime(res.data.failureTimeMinute)
-				this.progress[3].percentage = Math.floor(res.data.offTime * 100 * 100) / 100
-				this.progress[3].time = this.countTime(res.data.offTimeMinute)
+				this.progress[0].percentage = Math.floor(res.data.startupTime * 100 * 100) / 100 // 作业百分比
+				this.progress[0].time = this.countTime(res.data.startupTimeMinute) || 0 // 作业时间
+				this.progress[1].percentage = Math.floor(res.data.standbyTime * 100 * 100) / 100 // 待机百分比
+				this.progress[1].time = this.countTime(res.data.standbyTimeMinute) // 待机时间
+				this.progress[2].percentage = Math.floor(res.data.failureTime * 100 * 100) / 100 // 故障百分比
+				this.progress[2].time = this.countTime(res.data.failureTimeMinute) // 故障时间
+				this.progress[3].percentage = Math.floor(res.data.offTime * 100 * 100) / 100 // 关机百分比
+				this.progress[3].time = this.countTime(res.data.offTimeMinute) // 关机时间
 
-				this.echartsData[0].value = this.returnMin(res.data.startupTimeMinute)
-				this.echartsData[1].value = this.returnMin(res.data.standbyTimeMinute)
-				this.echartsData[2].value = this.returnMin(res.data.failureTimeMinute)
-				this.echartsData[3].value = this.returnMin(res.data.offTimeMinute)
+				this.echartsData[0].value = this.returnMin(res.data.startupTimeMinute) // 作业时间(min)
+				this.echartsData[1].value = this.returnMin(res.data.standbyTimeMinute) // 待机时间(min)
+				this.echartsData[2].value = this.returnMin(res.data.failureTimeMinute) // 故障时间(min)
+				this.echartsData[3].value = this.returnMin(res.data.offTimeMinute) // 关机时间(min)
 
         const currentStatus = res.data.machineStatus;
         if(currentStatus===1){ // 作业
           this.deviceDataObj.time = this.progress[0].time
         } else if(currentStatus===2) { // 待机
           this.deviceDataObj.time = this.progress[1].time
-        } else if(currentStatus===3) { // 关机
-          this.deviceDataObj.time = this.progress[3].time
         } else if(currentStatus===4) { // 故障
           this.deviceDataObj.time = this.progress[2].time
-        }
+        } else if(currentStatus===3) { // 关机
+          this.deviceDataObj.time = this.progress[3].time
+        } 
         this.deviceDataObj.machineStatus = currentStatus
 
 				this.renderPie(document.getElementById('pie'), this.echartsData);
 			},
+			// 计算时间函数
 			countTime(value) {
 				var h = Math.floor(value / 3600) < 10 ? '0' + Math.floor(value / 3600) : Math.floor(value / 3600);
 				var m = Math.floor((value / 60 % 60)) < 10 ? '0' + Math.floor((value / 60 % 60)) : Math.floor((value / 60 % 60));
 				var s = Math.floor(value % 60) < 10 ? '0' + Math.floor((value % 60)) : Math.floor((value % 60));
 				return h + ':' + m + ':' + s
 			},
+			// 返回分钟
 			returnMin(value) {
 				var m = Math.floor(value / 60 * 100) / 100;
 				return m
-			}
-			/*
-				mfs end
-			*/
+			},
+			handleResize() {
+				echarts.init(document.getElementById('pie')).resize();
+			},
 
     },
     destroyed() {

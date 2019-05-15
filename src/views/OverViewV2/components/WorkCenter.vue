@@ -31,6 +31,10 @@
             <span class="value">{{item.liyongLv}}%</span>
           </li>
           <li>
+            <span class="label">计划完成率</span>
+            <span class="value">{{item.planFinishRate}}%</span>
+          </li>
+          <li>
             <span class="label">总耗电量</span>
             <span class="value">{{item.elcPower}} kw•h</span>
           </li>
@@ -46,13 +50,13 @@ import {
   reqCountDeviceMain
 } from '@/api'
 export default {
-  name: 'CraftType',
+  name: 'WorkCenter',
   data() {
     return{
       currentTime: '', // 系统当前日期
       list: [],
       companyCode: '',
-      refreshDataId: null
+      refreshDataIdC: null
     }
   },
   computed: {
@@ -62,29 +66,27 @@ export default {
   },
   watch: {
     companyCodeStr(newvalue) {
-      // console.log('craftType code:',newvalue)
+      // console.log('workCenter code:',newvalue)
       this.getCraftTypeData()
     }
   },
   mounted() {
     this.currentTime = moment(new Date()).format('YYYY-MM-DD');
+    this.getCraftTypeData()
 
-    if(this.companyCodeStr) { // 页面切换tab时，this.companyCodeStr=''
-       this.getCraftTypeData()
-    }
-
-    this.refreshDataId = setInterval(() => {
+    this.refreshDataIdC = setInterval(() => {
         this.getCraftTypeData()
-      }, 10000)
+    }, 10000)
   },
   methods: {
     async getCraftTypeData() {
       this.companyCode = JSON.parse(this.companyCodeStr).value
       this.list = [];
-      const res = await reqCountDeviceMain(this.companyCode,'','02',this.currentTime) // 
+      const res = await reqCountDeviceMain(this.companyCode,'','04',this.currentTime) // 
       if(res&&res.code===200&&res.data.length){
         const resList = res.data
         const newList = resList.forEach(item => {
+
           /**
            * 逻辑规则：
            * 开机时间 = 作业时间 + 待机时间
@@ -107,6 +109,9 @@ export default {
           const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
           const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
 
+          const planProcedureNum = item.planProcedureNum || 0 // 计划工件数
+          const overProcedureNum = item.overProcedureNum || 0 // 完成工件数
+
           // 开机率（开机时间/自然时间）
           let bootRate = 0
           if (startUpHour) {
@@ -128,33 +133,24 @@ export default {
           // 利用率
           let liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率/作业率）
 
-          let workCenterName = '';
-          if (item.firstGroupCode === '01') {
-            workCenterName = '下料'
-          } else if (item.firstGroupCode === '02') {
-            workCenterName = '成型'
-          } else if (item.firstGroupCode === '03') {
-            workCenterName = '焊接'
-          } else if (item.firstGroupCode === '04') {
-            workCenterName = '热处理'
-          } else if (item.firstGroupCode === '05') {
-            workCenterName = '机加'
-          } else if (item.firstGroupCode === '06') {
-            workCenterName = '涂装'
-          } else if (item.firstGroupCode === '07') {
-            workCenterName = '装配'
-          } else if (item.firstGroupCode === '08') {
-            workCenterName = '调试'
+          // 计划完成率
+          let planFinishRate = 0
+          if (overProcedureNum) {
+            planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
           }
+
+          let workCenterName = item.workCenterName
+
           let obj = {
-            firstGroupCode: item.firstGroupCode,
+            workCenterCode: item.workCenterCode,
             workCenterName,
             totalNum,
             elcPower,
             bootRate,
             workRate,
             alarmRate,
-            liyongLv
+            liyongLv,
+            planFinishRate
           }
           // 开机率
           this.list.push(obj)
@@ -166,15 +162,16 @@ export default {
       if (!item.totalNum) {
         return;
       }
-      const deviceHomeObj = {type: '01',typeCode: item.firstGroupCode} // 类型 01 工艺，02 加工中心 
+      // const deviceHomeObj = {type: '02',typeCode: item.workCenterCode} // 类型 01 工艺，02 加工中心 
+      const deviceHomeObj = {type: '02',typeCode: item.workCenterName} // 类型 01 工艺，02 加工中心 
       localStorage.setItem('sbhl-DeviceHome-Param',JSON.stringify(deviceHomeObj))
 
-      this.$router.push('/DeviceList')
+      this.$router.push('/DeviceList');
 
     }
   },
   destroyed() {
-    clearInterval(this.refreshDataId)
+    clearInterval(this.refreshDataIdC)
   }
 }
 </script>
@@ -212,13 +209,13 @@ export default {
         margin-top:-15px;
       }
       li{
-        margin-top:10px;
+        margin-top:5px;
         &:first-child{
           margin-top:0;
         }
       }
       
-      .label{color:#cccccc;width:100px;text-align: right;display: inline-block;}
+      .label{color:#cccccc;width:110px;text-align: right;display: inline-block;}
       .value{color:#02c9fc;margin-left:10px;}
     }
   }

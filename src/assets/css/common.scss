@@ -79,6 +79,10 @@ html,body{
 .marginLeft10{ margin-left: 10px; }
 .marginLeft15{ margin-left: 15px; }
 .marginLeft20{ margin-left: 20px; }
+.marginRight15{ margin-right: 15px; }
+.marginRight20{ margin-right: 20px; }
+.marginRight30{ margin-right: 30px; }
+.paddingTop10{ padding-top: 10px; }
 @media (min-width: 1024px){
   html{font-size: 53.33px}
 }
@@ -101,5 +105,107 @@ html,body{
 }
 body{font-size: 12px;}
 
+.cursorPointer{cursor: pointer;}
+.inlineBlock{ display: inline-block; }
 
+.common-btn{
+  background: linear-gradient(#2ed9eb,#028bfe);
+  border-radius: 4px;
+  padding: 8px 15px;
+  color: #fff;
+  cursor: pointer;
+}
+.common-btn2{
+  background: rgba(1,203,255,0.4);
+  border-radius: 4px;
+  padding: 8px 15px;
+  color: #fff;
+  cursor: pointer;
+}
+//-----------delete后面会去掉---------
+.common-table{
+  .table-thead{
+    background-color:#2a4b85;
+    font-size: 18px;color:#53e3fd;
+    padding: 8px 0;
+    font-weight: bold;
+  }
+  .table-tbody{
+    padding-top:23px;
+    font-size:16px;
+    color:#02c9fc;
+  }
+  .table-tr{
+    margin-bottom:15px;
+    background-color:rgba(42,75,133,0.3);
+    padding:5px 0;
+    cursor: pointer;
+  }
+  .table-td{
+    display: inline-block;text-align: center;
+  }
+}
+//--------------
 
+.common_table{
+  display: table;width: 100%;height:100%;
+  .table_thead{
+    display: table;width: 100%;table-layout: fixed;
+    background-color:#2a4b85;
+    font-size: 18px;color:#53e3fd;
+    padding: 8px 0;
+    font-weight: bold;
+  }
+  .table_tbody{
+    padding-top:23px;
+    font-size:16px;
+    color:#02c9fc;
+  }
+  .table_tbodyInner{
+    /deep/ .el-scrollbar__wrap{
+			overflow-x: hidden;
+			overflow-y: scroll
+		}
+  }
+  .table_tr{
+    display: table;width: 100%;table-layout: fixed;
+    margin-bottom:15px;
+    background-color:rgba(42,75,133,0.3);
+    padding:5px 0;
+  }
+  .table_td{
+    display: table-cell;text-align: center;
+    white-space: nowrap;text-overflow: ellipsis;overflow: hidden;
+  }
+}
+
+// 页面背景
+.common_bg{ 
+  height: 100%;
+  background-image: url(../images/common_bodyBg01.png);
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+}
+// 页面背景2
+.common_bg02{
+  background-image: url(../images/common_bj.png);
+  .common_head{
+    background-image: url(../images/common_nav.png)  !important;
+  }
+  .common_head-center .title{
+    padding-top: 0.1rem;
+  }
+}
+.common_main{
+  margin: 15px;
+  flex: 1;
+  height: calc(100% - 110px - 30px);
+}
+.common_blockColor{
+  background: rgba(39, 69, 111, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.gray{
+  color:#7b7f81
+}

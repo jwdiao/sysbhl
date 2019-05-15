@@ -1,5 +1,5 @@
 <template>
-  <div id="myEchartA" style="width:100%;height:100%;margin-top:20px;">EchartsLine</div>
+  <div id="DeviceDetail_dianliu" style="width:100%;height:100%;margin-top:20px;">EchartsLine</div>
 </template>
 <script>
 import echarts from 'echarts'
@@ -15,8 +15,6 @@ export default {
     return {
         deviceID: '', // 设备id
         setIntervalId: ''
-        // machineName: '', // 设备名字
-        // machineStatus: '' // 设备状态
     }
   },
   mounted() {
@@ -29,7 +27,7 @@ export default {
   methods: {
     async renderDianliu() {
       let self = this;
-      var myChartDidanliu = echarts.init(document.getElementById("myEchartA"))
+      var myChartDidanliu = echarts.init(document.getElementById("DeviceDetail_dianliu"))
       var option = {
         grid: {
           top: 50,

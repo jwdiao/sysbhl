@@ -16,15 +16,15 @@
         <ul>
           <li>
             <span class="label">开机率</span>
-            <span class="value">{{item.kaijiLv}}%</span>
+            <span class="value">{{item.bootRate}}%</span>
           </li>
           <li>
             <span class="label">作业率</span>
-            <span class="value">{{item.zuoyeLv}}%</span>
+            <span class="value">{{item.workRate}}%</span>
           </li>
           <li>
             <span class="label">故障率</span>
-            <span class="value">{{item.alarmLv}}%</span>
+            <span class="value">{{item.alarmRate}}%</span>
           </li>
           <li>
             <span class="label">利用率</span>
@@ -51,7 +51,8 @@ export default {
     return{
       currentTime: '', // 系统当前日期
       list: [],
-      companyCode: ''
+      companyCode: '',
+      refreshDataIdC: null
     }
   },
   computed: {
@@ -68,60 +69,62 @@ export default {
   mounted() {
     this.currentTime = moment(new Date()).format('YYYY-MM-DD');
     this.getCraftTypeData()
+
+    this.refreshDataIdC = setInterval(() => {
+        this.getCraftTypeData()
+    }, 10000)
   },
   methods: {
     async getCraftTypeData() {
       this.companyCode = JSON.parse(this.companyCodeStr).value
       this.list = [];
       const res = await reqCountDeviceMain(this.companyCode,'','04',this.currentTime) // 
-      // return;
       if(res&&res.code===200&&res.data.length){
         const resList = res.data
         const newList = resList.forEach(item => {
 
-          // debugger;
-          const runTime = item.runTime == null ? 0 : item.runTime // 作业时间
-          const idleTime = item.idleTime == null ? 0 : item.idleTime // 空闲时间（待机时间）
-          const naturalTime = item.naturalTime == null ? 0 : item.naturalTime // 自然时间
-          const alarmNum = item.alarmNum == null ? 0 : item.alarmNum // 故障数
-          const totalNum = item.totalNum == null ? 0 : item.totalNum // 总数
-          const elcPower = item.elcPower == null ? 0 : item.elcPower // 总耗电量
+          /**
+           * 逻辑规则：
+           * 开机时间 = 作业时间 + 待机时间
+           * 开机率 = 开机时间 / 自然时间
+           * 作业率 = 作业时间 / 开机时间
+           * 故障率 = 故障数 / 总数
+           * 利用率 = 开机率 * 作业率
+           * 总耗电量 = 消耗电能 / 总数 
+           */
 
-          let kaijiTime = runTime + idleTime; // 开机时间（作业时间+空闲时间）
-          // let kaijiLv = kaijiTime / naturalTime; // 开机率（开机时间/自然时间）
-          // let zuoyeLv = runTime / kaijiTime // 作业率（作业时间/开机时间）
-          // let alarmLv = alarmNum / totalNum // 故障率（故障数/总数）
-          // let liyongLv = kaijiLv / zuoyeLv // 利用率（开机率*作业率）
+          const idleTime = item.idleTime || 0 // 待机时间（秒）
+          const runTime = item.runTime || 0 // 作业时间（秒）
+          const naturalTime = item.naturalTime || 0 // 自然时间（秒）
+          const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
 
-          let kaijiLv = 0; // 开机率（开机时间/自然时间）
-          if (kaijiTime == 0) {
-            kaijiLv = 0;
-          } else {
-            kaijiLv = (kaijiTime / naturalTime *100).toFixed(2); // 开机率（开机时间/自然时间）
+          const alarmNum = item.alarmNum || 0 // 故障数
+          const totalNum = item.totalNum || 0 // 总数
+          const elcPower = item.elcPower || 0 // 总耗电量
+
+          const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
+          const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
+
+          // 开机率（开机时间/自然时间）
+          let bootRate = 0
+          if (startUpHour) {
+            bootRate = (startUpHour/naturalTimeHour)*100 > 100 ? 100 : (startUpHour/naturalTimeHour*100).toFixed(2) // 开机率
           }
 
-          let zuoyeLv = 0; // 作业率（作业时间/开机时间）
-          if (runTime == 0) {
-            zuoyeLv = 0;  
-          } else {
-            zuoyeLv = (runTime / kaijiTime *100).toFixed(2) // 作业率（作业时间/开机时间）
-          }   
-          
-          // 故障率
-          let alarmLv = 0;
-          if (alarmNum == 0) {
-            alarmLv = 0;
-          } else {
-            alarmLv = (alarmNum / totalNum *100).toFixed(2) // 故障率（故障数/总数）
+          // 作业率（作业时间/开机时间）
+          let workRate = 0
+          if (workHour) {
+            workRate = (workHour/startUpHour*100) > 100 ? 100: (workHour/startUpHour*100).toFixed(2) // 作业率
+          }
+
+          // 故障率（故障数/总数）
+          let alarmRate = 0
+          if (alarmNum) {
+            alarmRate = (alarmNum/totalNum)*100 > 100 ? 100 :(alarmNum/totalNum*100).toFixed(2) // 故障率
           }
 
           // 利用率
-          let liyongLv = 0
-          if (kaijiLv == 0) {
-            liyongLv = 0
-          } else {
-            liyongLv = ((kaijiLv/100 * zuoyeLv/100)*100).toFixed(2) // 利用率（开机率/作业率）
-          }
+          let liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率/作业率）
 
           let workCenterName = item.workCenterName
 
@@ -129,11 +132,11 @@ export default {
             workCenterCode: item.workCenterCode,
             workCenterName,
             totalNum,
-            kaijiLv,
-            zuoyeLv,
-            alarmLv,
-            liyongLv,
-            elcPower
+            elcPower,
+            bootRate,
+            workRate,
+            alarmRate,
+            liyongLv
           }
           // 开机率
           this.list.push(obj)
@@ -142,13 +145,20 @@ export default {
       }
     },
     handleClick(item) {
+      if (!item.totalNum) {
+        return;
+      }
       // const deviceHomeObj = {type: '02',typeCode: item.workCenterCode} // 类型 01 工艺，02 加工中心 
       const deviceHomeObj = {type: '02',typeCode: item.workCenterName} // 类型 01 工艺，02 加工中心 
       localStorage.setItem('sbhl-DeviceHome-Param',JSON.stringify(deviceHomeObj))
-      this.$router.push('/DeviceHome');
+
+      this.$router.push('/DeviceList');
 
     }
   },
+  destroyed() {
+    clearInterval(this.refreshDataIdC)
+  }
 }
 </script>
 <style lang="scss" scoped>

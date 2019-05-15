@@ -54,8 +54,8 @@ export default {
       selectDialogShow: false, // 是否显示顶部事业部子公司弹窗
       careerValue: '', // 点击标题下拉事业部选中值
       careerOptions: [ // 事业部下拉option
-        {label:'重机事业部',value:'zhongji'},
         {label:'重能事业部',value:'zhongneng'},
+        {label:'重机事业部',value:'zhongji'},
       ],
       company_code: '', // 子公司选中值
       companyOptions: [], // 子公司option
@@ -71,13 +71,13 @@ export default {
       // console.log(`选择的事业部是：${val}`)
       this.companyOptions = []
       this.company_code = ''
-      if (val === 'zhongji') {
+      if (val === 'zhongneng') {
+        this.companyOptions = [
+          {label:'三一德力佳',value:'0701'},
+        ]
+      }else if (val === 'zhongji') {
         this.companyOptions = [
           {label:'北京桩机',value:'0301'},
-        ]
-      } else if (val === 'zhongneng') {
-        this.companyOptions = [
-          {label:'三一重能',value:'0701'},
         ]
       }
     },
