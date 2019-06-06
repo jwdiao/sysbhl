@@ -217,15 +217,20 @@
         },
         isOpenedNav: false, // 导航是否显示
         NavPageList: [
-          /* {
+          {
             id: '001',
-            name: '主页面',
-            url: '/OverView'
-          }, */
+            name: '设备故障统计',
+            url: '/DeviceFailure'
+          },
           {
             id: '002',
-            name: '故障管理',
-            url: '/DeviceFailure'
+            name: '设备报表统计',
+            url: '/WeekStatistics'
+          },
+          {
+            id: '003',
+            name: '设备排序统计',
+            url: '/Statistics'
           },
         ]
       }
@@ -324,7 +329,7 @@
                * 开机时间 = 作业时间 + 待机时间
                * 开机率 = 开机时间 / 自然时间
                * 作业率 = 作业时间 / 开机时间
-               * 故障率 = 故障数 / 总数
+               * 故障率 = 故障时间/自然时间(老的的规则已经废弃：故障数 / 总数)
                * 利用率 = 开机率 * 作业率
                * 总耗电量 = 消耗电能 / 总数 
                * 在线 = 作业 + 待机 + 故障 + 停机
@@ -335,6 +340,7 @@
               const runNum = resData.runNum || 0 // 作业台数
               const idleNum = resData.idleNum || 0 // 待机台数
               const alarmNum = resData.alarmNum || 0 // 故障台数
+              const failureTime = resData.alermTime || 0 // 故障时间
               const shutDownNum = resData.shutDownNum || 0 // 关机台数
               const onlineNum = runNum + idleNum + alarmNum + shutDownNum // 在线台数
               const outlineNum = totalNum - onlineNum // 离线台数
@@ -346,15 +352,30 @@
               const runTime = resData.runTime || 0 // 作业时间（秒）
               const naturalTime = resData.naturalTime || 0 // 自然时间（秒）
               const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）             
-              const elcPower = resData.elcPower || 0 // 总耗电量
+              const elcPower = resData.elcPower.toFixed(2) || 0 // 总耗电量
 
               const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
               const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
-              const bootRate = (startUpHour/naturalTimeHour)*100 > 100 ? 100 : (startUpHour/naturalTimeHour*100).toFixed(2) // 开机率
-              const workRate = (workHour/startUpHour*100) > 100 ? 100: (workHour/startUpHour*100).toFixed(2) // 作业率
-              const alarmRate = (alarmNum/totalNum)*100 > 100 ? 100 :(alarmNum/totalNum*100).toFixed(2) // 故障率
 
-              const planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
+              let bootRate = 0; // 开机率
+              if(startUpHour){
+                bootRate = (startUpHour/naturalTimeHour)*100 > 100 ? 100 : (startUpHour/naturalTimeHour*100).toFixed(2) // 开机率
+              }
+
+              let workRate = 0; // 作业率
+              if(workHour) {
+                workRate = (workHour/startUpHour*100) > 100 ? 100: (workHour/startUpHour*100).toFixed(2) // 作业率
+              }
+              let alarmRate = 0; // 故障率
+              if(alarmNum) {
+                // alarmRate = (alarmNum/totalNum)*100 > 100 ? 100 :(alarmNum/totalNum*100).toFixed(2) // 故障率
+                alarmRate = (failureTime/naturalTime)*100 > 100 ? 100 : (failureTime/naturalTime*100).toFixed(2) // 故障率
+              }
+
+              let planFinishRate = 0 // 计划完成率
+              if (overProcedureNum) {
+                planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
+              }
 
               let deviceDataObj = {
                 totalNum: totalNum, // 设备总数
@@ -365,7 +386,7 @@
                 idleNum: idleNum, // 待机台数
                 alarmNum: alarmNum, // 故障数
                 shutDownNum: shutDownNum, // 关机
-                elcPower: elcPower || 0, // 总耗电量
+                elcPower: elcPower, // 总耗电量
                 startUpHour: startUpHour, // 开机小时数
                 workHour: workHour, // 作业小时数
                 bootRate: bootRate, // 开机率
@@ -408,8 +429,8 @@
               this.chartsCData.runRateArr = res10.data.runRateArr; // 作业率
               var newArr10 = []
               res10.data.powerUseArr.forEach(item=>{
-                item<0 ? item = 0 : item
-                newArr10.push(item)
+                let newItem = item<0 ? 0 : item.toFixed(2)
+                newArr10.push(newItem)
               })
               this.chartsCData.powerUseArr = newArr10; // 能耗
               this.renderEchartsC(myThisDay, this.chartsCData)
@@ -424,8 +445,8 @@
               this.chartsBData.runRateArr = res11.data.runRateArr; // 作业率
               var newArr11 = []
               res11.data.powerUseArr.forEach(item=>{
-                item<0 ? item = 0 : item
-                newArr11.push(item)
+                let newItem = item<0 ? 0 : item.toFixed(2)
+                newArr11.push(newItem)
               })
               this.chartsBData.powerUseArr = newArr11; // 能耗
               // console.log('newArr11:',newArr11)
@@ -441,8 +462,8 @@
               this.chartsAData.runRateArr = res12.data.runRateArr; // 作业率
               var newArr12 = []
                 res12.data.powerUseArr.forEach(item=>{
-                item<0 ? item = 0 : item
-                  newArr12.push(item)
+                  let newItem = item<0 ? 0 : item.toFixed(2)
+                  newArr12.push(newItem)
               })
               // console.log('newArr12:',newArr12)
               this.chartsAData.powerUseArr = newArr12; // 能耗
@@ -857,7 +878,7 @@
               }
             }
           },
-          grid: { top: '25%', left: '10%', right: '10%', bottom: '20%'},
+          grid: { top: '25%', left: '10%', right: '12%', bottom: '20%'},
           xAxis: [
             {
               type: 'category',
@@ -1248,7 +1269,8 @@
           height: 273px;
           display: flex;flex-direction: column;
           .statusListTop{
-            flex: 1;display: flex;align-items: center;
+            // flex: 1;
+            display: flex;align-items: center;
             background: url("../../assets/images/title-bg.png") no-repeat;
             background-size: 100% 100%;
             margin-bottom:10px;
@@ -1271,7 +1293,8 @@
             }
           }
           .statusListBottom{
-            display: flex;flex: 1.8;
+            display: flex;
+            // flex: 1.8;
             /*height: 190px;*/
             li{
               flex: 1;text-align: center;margin-right: 0.1rem;

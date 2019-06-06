@@ -6,6 +6,7 @@ Vue.use(Router)
 const router = new Router({
   mode: 'history',
   base: '/sanysbhlreport/',
+  // base: '/sanysbhlreporttest/',
   routes: [
     {
       path: '/',
@@ -24,8 +25,9 @@ const router = new Router({
     {
       path: '/DeviceList', // 设备列表
       name: 'DeviceList',
-      component: () => import('../views/DeviceList/Index.vue') // 没统一改标题
-      // component: () => import('../views/DeviceList/Index-updateHead.vue') // 统一改标题后
+      // component: () => import('../views/DeviceList/Index.vue') // 没统一改标题
+      // component: () => import('../views/DeviceList/IndexV2.vue') // 统一改标题后
+      component: () => import('../views/DeviceList/IndexV3.vue') // 统一改标题后
     },
     {
       path: '/DeviceDetail', // 设备详情
@@ -43,9 +45,14 @@ const router = new Router({
       component: () => import('../views/Statistics/Index.vue')
     },
     {
+      path: '/WeekStatistics', // 统计报表
+      name: 'WeekStatistics',
+      component: () => import('../views/Statistics/Week.vue')
+    },
+    {
       path: '/Test02',
       name: 'Test02',
-      component: () => import('../views/Test/Index2.vue')
+      component: () => import('../views/Test/Table02.vue')
     },
     {
       path: '/Template',

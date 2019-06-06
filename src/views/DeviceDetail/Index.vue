@@ -17,7 +17,8 @@
 					<div class="device_leftTop">
 						<p class="name">{{deviceDataObj.machineName}}</p>
 						<div class="img">
-							<img src="../../assets/images/DeviceConnect_jc.png" style="width:80%;height:80%"/>
+							<!-- <img src="../../assets/images/DeviceConnect_jc.png" style="width:80%;height:80%"/> -->
+							<img :src="deviceData.urlPath" style="width:80%;" />
 						</div>
 						<div class="timeBox">
 							<span class="text" v-if="deviceDataObj.machineStatus==1" style="color:#1cf33c">&nbsp;作业</span>
@@ -81,7 +82,11 @@
 									<ul class="centerContentDiv" style="margin-bottom: -0.3rem;">
 										<li class="centerContentDivSpanZhuZhou"><em>主轴负载率</em> </li>
 										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -0.5rem" v-if="!deviceData.spinLoad"><em></em></li>
-										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -0.5rem" v-else><em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.spinLoad)}}&nbsp;%</em></li>
+										<!-- <li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -0.5rem" v-else><em>&nbsp;&nbsp;&nbsp;{{Math.floor(deviceData.spinLoad)}}&nbsp;%</em></li> -->
+										<li class="centerContentDivSpanZhuZhouNumber" style="margin-left: -0.5rem" v-else><em>&nbsp;&nbsp;&nbsp;
+											{{(deviceData.spinLoad>deviceData.maxSpinLoad)? Math.floor(deviceData.maxSpinLoad) : Math.floor(deviceData.spinLoad)}}
+											&nbsp;%</em>
+										</li>
 									</ul>
 									<ul class="centerContentDiv">
 										<li class="centerContentDivSpanZhuZhou"><em>主轴最大负载率 </em></li>
@@ -391,7 +396,8 @@
               absPos:[],
               relPos:[],
               machPos:[],
-              remDist:[],
+							remDist:[],
+							urlPath: ''
             }
           }
 

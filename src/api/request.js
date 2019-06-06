@@ -75,3 +75,44 @@ export function post(url, params) {
     })
   })
 }
+/* export function postFile(url, params) {
+  return new Promise((resolve, reject) => {
+    axios({
+      method: 'post',
+      url: url,
+      data: params,
+      headers:{'filename':'utf-8'},
+      responseType:'blob'
+    }).then(res => {
+      // resolve(res)
+      const blob = new Blob([res],{type: "application/ms-excel"});
+      const fileName = '统计.xlsx';
+      const elink = document.createElement('a');
+      elink.download = fileName; //下载后文件名
+      elink.style.display = 'none';
+      elink.href = URL.createObjectURL(blob); //创建下载的链接
+      document.body.appendChild(elink);
+      elink.click(); //点击下载
+      URL.revokeObjectURL(elink.href); // 释放URL 对象
+      document.body.removeChild(elink); //下载完成移除元素
+    }).catch(err => {
+      console.log(err)
+    })
+  })
+} */
+
+// 导出Excel
+export function postExcelFile(url, params) {
+  return new Promise((resolve, reject) => {
+    axios({
+      method: 'post',
+      url: url,
+      data: params,
+      responseType:'blob'
+    }).then(res => {
+      resolve(res)
+    }).catch(err => {
+      console.log(err)
+    })
+  })
+}

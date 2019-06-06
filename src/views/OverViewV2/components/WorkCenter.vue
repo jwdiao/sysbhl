@@ -76,7 +76,7 @@ export default {
 
     this.refreshDataIdC = setInterval(() => {
         this.getCraftTypeData()
-    }, 10000)
+    }, 60000)
   },
   methods: {
     async getCraftTypeData() {
@@ -87,15 +87,18 @@ export default {
         const resList = res.data
         const newList = resList.forEach(item => {
 
-          /**
-           * 逻辑规则：
-           * 开机时间 = 作业时间 + 待机时间
-           * 开机率 = 开机时间 / 自然时间
-           * 作业率 = 作业时间 / 开机时间
-           * 故障率 = 故障数 / 总数
-           * 利用率 = 开机率 * 作业率
-           * 总耗电量 = 消耗电能 / 总数 
-           */
+        /**
+         * 逻辑规则：
+         * 开机时间 = 作业时间 + 待机时间
+         * 开机率 = 开机时间 / 自然时间
+         * 作业率 = 作业时间 / 开机时间
+         * 故障率 = 故障时间/自然时间(老的的规则已经废弃：故障数 / 总数)
+         * 利用率 = 开机率 * 作业率
+         * 总耗电量 = 消耗电能 / 总数 
+         * 在线 = 作业 + 待机 + 故障 + 停机
+         * 离线 = 设备总数 - 在线
+         * 计划完成率 = 完成工件数/计划工件数
+         */
 
           const idleTime = item.idleTime || 0 // 待机时间（秒）
           const runTime = item.runTime || 0 // 作业时间（秒）
@@ -103,8 +106,9 @@ export default {
           const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
 
           const alarmNum = item.alarmNum || 0 // 故障数
+          const failureTime = item.alermTime || 0 // 故障时间
           const totalNum = item.totalNum || 0 // 总数
-          const elcPower = item.elcPower || 0 // 总耗电量
+          const elcPower = (item.elcPower).toFixed(2) || 0 // 总耗电量
 
           const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
           const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
@@ -124,10 +128,10 @@ export default {
             workRate = (workHour/startUpHour*100) > 100 ? 100: (workHour/startUpHour*100).toFixed(2) // 作业率
           }
 
-          // 故障率（故障数/总数）
+          // 故障率（故障时间/自然时间）
           let alarmRate = 0
-          if (alarmNum) {
-            alarmRate = (alarmNum/totalNum)*100 > 100 ? 100 :(alarmNum/totalNum*100).toFixed(2) // 故障率
+          if (failureTime) {
+            alarmRate = (failureTime/naturalTime)*100 > 100 ? 100 : (failureTime/naturalTime*100).toFixed(2) // 故障率
           }
 
           // 利用率
@@ -187,7 +191,8 @@ export default {
     height: 261px;
     background-image: url(../../../assets/images/overview_tabItem-primary.png);
     background-repeat: no-repeat;
-    padding: 0 25px;
+    // padding: 0 25px;
+    padding: 0 15px 0 25px;
     float: left;
     margin-left:30px;
     // cursor: pointer;

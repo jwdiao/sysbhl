@@ -29,6 +29,7 @@
 					<el-button type="primary" size="small" class="marginLeft15" @click="searchFun">搜索</el-button>
 				</div>
 			</div>
+
 			<div class="device_main">
 				<div class="device_table">
 				    <div class="table-thead">
@@ -36,12 +37,21 @@
 							<span class="table-td table-td02">设备编号</span>
 							<span class="table-td table-td03">设备名称</span>
 							<span class="table-td table-td04">状态</span>
-							<!-- <span class="table-td table-td05">操作模式</span> -->
-							<span class="table-td table-td06">主轴转速(rpm)</span>
-							<span class="table-td table-td07">进给倍率(%)</span>
-							<span class="table-td table-td08">日待机时间(h)</span>
-							<span class="table-td table-td09">日作业时间(h)</span>
+							<span class="table-td table-td05">开机小时数</span>
+							<span class="table-td table-td06">作业小时数</span>
+							<span class="table-td table-td07">待机小时数</span>
+							<span class="table-td table-td08">开机率</span>
+							<span class="table-td table-td09">作业率</span>
 							<span class="table-td table-td10">利用率</span>
+							<span class="table-td table-td11">故障率</span>
+							<span class="table-td table-td12">完成工件数</span>
+							<span class="table-td table-td13">计划完成率</span>
+							<span class="table-td table-td14">总耗电量(kw.h)</span>
+							<!-- <span class="table-td table-td06">主轴转速(rpm)</span> -->
+							<!-- <span class="table-td table-td07">进给倍率(%)</span> -->
+							<!-- <span class="table-td table-td08">日待机时间(h)</span> -->
+							<!-- <span class="table-td table-td09">日作业时间(h)</span> -->
+							<!-- <span class="table-td table-td10">利用率</span> -->
 						</div>
 						<el-scrollbar class="table-tbodyBox" v-if="deviceList.length>0">
 							<div class="table-tbody">
@@ -63,11 +73,21 @@
 
 
 									<!-- <span class="table-td table-td05">{{item.operMode}}</span> -->
-									<span class="table-td table-td06">{{item.actSpin==='-100000.0F'?0:item.actSpin}}</span>
-									<span class="table-td table-td07">{{item.actFeed==='-100000.0F'?0:item.actFeed}}</span>
-									<span class="table-td table-td08">{{item.standbyTime}}</span>
-									<span class="table-td table-td09">{{item.startupTime}}</span>
-									<span class="table-td table-td10">{{item.liyongLv}}</span>
+									<!-- <span class="table-td table-td06">{{item.actSpin==='-100000.0F'?0:item.actSpin}}</span> -->
+									<!-- <span class="table-td table-td07">{{item.actFeed==='-100000.0F'?0:item.actFeed}}</span> -->
+									<!-- <span class="table-td table-td08">{{item.standbyTime}}</span> -->
+									<!-- <span class="table-td table-td09">{{item.startupTime}}</span> -->
+									<!-- <span class="table-td table-td10">{{item.liyongLv}}</span> -->
+									<span class="table-td table-td05">{{item.startUpHour}}</span>
+									<span class="table-td table-td06">{{item.runTimeHour}}</span>
+									<span class="table-td table-td07">{{item.idleTimeHour}}</span>
+									<span class="table-td table-td08">{{item.bootRate}}%</span>
+									<span class="table-td table-td09">{{item.workRate}}%</span>
+									<span class="table-td table-td10">{{item.liyongLv}}%</span>
+									<span class="table-td table-td11">{{item.alarmRate}}%</span>
+									<span class="table-td table-td12">{{item.overProcedureNum}}</span>
+									<span class="table-td table-td13">{{item.planFinishRate}}%</span>
+									<span class="table-td table-td14">{{item.elcPower}}</span>
 								</div>
 							</div>
 						</el-scrollbar>
@@ -166,6 +186,111 @@ import {
 				this.deviceList = []
 				const res = await reqSelectMachineByMachineStatus(this.statusValue,this.pageNum,this.pageSize,	this.companyCode, this.currentDate)
 				if(res && res.code === 200 && res.data && res.data.list.length){
+					/**
+					 * 逻辑规则：
+					 * 开机时间 = 作业时间 + 待机时间
+					 * 开机率 = 开机时间 / 自然时间
+					 * 作业率 = 作业时间 / 开机时间
+					 * 故障率 = 故障数 / 总数(修改为：故障时间/总时间)
+					 * 利用率 = 开机率 * 作业率
+					 * 总耗电量 = 消耗电能 / 总数 
+					 * 在线 = 作业 + 待机 + 故障 + 停机
+					 * 离线 = 设备总数 - 在线
+					 * 计划完成率 = 完成工件数/计划工件数
+					 */
+
+						const deviceList = res.data.list
+						deviceList.map((item, index) => {
+							
+							const runTimeHour = item.startupTime == null ? 0 : parseFloat((item.startupTime/3600).toFixed(2)) // 作业时间(小时)
+							const idleTimeHour = item.standbyTime == null ? 0 : parseFloat((item.standbyTime/3600).toFixed(2)) // 空闲时间（待机时间）小时
+							const naturalTime = item.naturalTime || 0 // 自然时间（秒）
+							const naturalTimeHour = item.naturalTime == null ? 0 : parseFloat(item.naturalTime/3600) // 自然时间（小时）
+
+							let startUpHour = (runTimeHour + idleTimeHour)? (runTimeHour + idleTimeHour).toFixed(2): 0; // 开机时间（作业时间+空闲时间）
+
+							const failureTime = item.failureTime || 0 // 故障时间
+							const planProcedureNum = parseFloat(item.orgCode) || 0 // 计划工件数
+							const overProcedureNum = parseFloat(item.orgName) || 0 // 完成工件数
+							const elcPower = item.totalPower ? item.totalPower.toFixed(2):0 // 总耗电量
+
+							let bootRate = 0; // 开机率（开机时间/自然时间）
+							if (startUpHour == 0) {
+								bootRate = 0;
+							} else {
+								bootRate = (startUpHour / naturalTimeHour*100).toFixed(2); // 开机率（开机时间/自然时间）
+							}
+
+							let workRate = 0; // 作业率（作业时间/开机时间）
+							if (runTimeHour == 0) {
+								workRate = 0;  
+							} else {
+								workRate = (runTimeHour / startUpHour*100).toFixed(2) // 作业率（作业时间/开机时间）
+							}   
+
+							// 利用率
+							let liyongLv = 0
+							if (bootRate == 0) {
+								liyongLv = 0
+							} else {
+								liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率*作业率）
+							}
+
+							// 故障率（故障时间/自然时间）
+							let alarmRate = 0
+							if (failureTime) {
+								alarmRate = (failureTime/naturalTime)*100 > 100 ? 100 : (failureTime/naturalTime*100).toFixed(2) // 故障率
+							}
+
+							let planFinishRate = 0 // 计划完成率
+              if (overProcedureNum) {
+                planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
+              }
+
+							let obj = {
+								num: ((this.pageNum - 1) * this.pageSize) + (index + 1),
+								id: item.id,
+								machineNo: item.machineNo, // 设备编号
+								machineName: item.machineName, // 设备名称
+								machineStatus: item.machineStatus, // 状态
+								startUpHour: startUpHour, // 开机小时数
+								runTimeHour: runTimeHour, // 作业小时数
+								idleTimeHour: idleTimeHour, // 待机时间(空闲时间（待机时间）)
+								bootRate: bootRate,// 开机率
+								workRate: workRate,// 作业率
+								liyongLv: liyongLv,// 利用率
+								alarmRate: alarmRate, // 故障率
+								overProcedureNum: overProcedureNum, // 完成工件数
+								planFinishRate: planFinishRate, // 计划完成率
+								elcPower: elcPower // 总耗电量
+							}
+							this.deviceList.push(obj)
+						})
+						
+						this.pageNum = res.data.pageNum
+						this.pageSize = res.data.pageSize
+						this.total = res.data.total
+				}
+
+			},			
+			async getDeviceListFun2() {
+				this.companyCode = JSON.parse(this.companyCodeStr).value;
+				this.deviceList = []
+				const res = await reqSelectMachineByMachineStatus(this.statusValue,this.pageNum,this.pageSize,	this.companyCode, this.currentDate)
+				if(res && res.code === 200 && res.data && res.data.list.length){
+					/**
+					 * 逻辑规则：
+					 * 开机时间 = 作业时间 + 待机时间
+					 * 开机率 = 开机时间 / 自然时间
+					 * 作业率 = 作业时间 / 开机时间
+					 * 故障率 = 故障数 / 总数
+					 * 利用率 = 开机率 * 作业率
+					 * 总耗电量 = 消耗电能 / 总数 
+					 * 在线 = 作业 + 待机 + 故障 + 停机
+					 * 离线 = 设备总数 - 在线
+					 * 计划完成率 = 完成工件数/计划工件数
+					 */
+
 						const deviceList = res.data.list
 						deviceList.map((item, index) => {
 							const startupTime = item.startupTime == null ? 0 : parseFloat((item.startupTime/3600).toFixed(2)) // 作业时间
@@ -195,12 +320,33 @@ import {
 							} else {
 								liyongLv = ((kaijiLv/100 * zuoyeLv/100)*100).toFixed(2) // 利用率（开机率/作业率）
 							}
-							let obj = {
+/* 							let obj = {
 								...item,
 								startupTime, // 日作业时间
               	standbyTime, // 日开机时间
 								liyongLv,
 								num: ((this.pageNum - 1) * this.pageSize) + (index + 1)
+							} */
+							let obj = {
+								num: ((this.pageNum - 1) * this.pageSize) + (index + 1),
+								id: item.id,
+								machineNo: item.machineNo, // 设备编号
+								machineName: item.machineName, // 设备名称
+								machineStatus: item.machineStatus, // 状态
+
+								kaijiTime: kaijiTime, // 开机小时数
+								startupTime: startupTime, // 作业小时数
+								kaijiLv: kaijiLv,// 开机率
+								zuoyeLv: zuoyeLv,// 作业率
+
+								liyongLv: liyongLv,// 利用率
+								standbyTime: standbyTime, // 待机时间(空闲时间（待机时间）)standbyTime
+
+
+								// 故障率
+								// 完成工件数
+								// 计划完成率
+								// 总耗电量
 							}
 							this.deviceList.push(obj)
 						})
@@ -372,7 +518,7 @@ import {
 	.table-td{
 		display: inline-block;text-align: center;
 	}
-	.table-td01{width: 5%;}
+/* 	.table-td01{width: 5%;}
 	.table-td02{width: 10%;}
 	// .table-td03{width: 15%;}
 	.table-td03{width: 15%;}
@@ -382,6 +528,24 @@ import {
 	.table-td07{width: 10%;}
 	.table-td08{width: 12%;}
 	.table-td09{width: 12%;}
-	.table-td10{width: 10%;}
+	.table-td10{width: 10%;} */
+	.table-td{
+		width: 7%;
+	}
+	.table-td01{width: 5%;}
+	.table-td02{width: 9%;}
+	.table-td03{width: 10%;}
+	.table-td04{width: 5%;}
+	.table-td14{width: 8%;}
+/* 	.table-td05{width: 5%;}
+	.table-td06{width: 5%;}
+	.table-td07{width: 5%;}
+	.table-td08{width: 5%;}
+	.table-td09{width: 5%;}
+	.table-td10{width: 5%;}
+	.table-td11{width: 5%;}
+	.table-td12{width: 5%;}
+	.table-td13{width: 5%;}
+	.table-td14{width: 5%;} */
 
 </style>

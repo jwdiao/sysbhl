@@ -84,7 +84,7 @@ export default {
     this.myChart = echarts.init(document.getElementById('overview-deviceStatics'))
     var option = {
       tooltip: {
-        trigger: 'axis',
+        trigger: 'axis'
       },
       grid: {
         right: '14%',
@@ -105,6 +105,7 @@ export default {
       xAxis: [
         {
           type: 'category',
+          boundaryGap: false,
           axisLabel: { // 坐标轴刻度标签的相关设置。
             rotate: 35, // 刻度标签旋转的角度
             margin: 30, // 刻度标签与轴线之间的距离。
@@ -112,7 +113,7 @@ export default {
             align: 'center',
           },
           axisPointer: { // 鼠标划上去阴影显示
-            type: 'shadow'
+            // type: 'shadow'
           },
           axisTick: { // 坐标轴刻度相关设置。
             interval: 0, // 坐标轴刻度的显示间隔
@@ -287,7 +288,10 @@ export default {
       const currentDate = moment(new Date()).format('YYYY-MM-DD'); // 当前日期
       const res = await reqMachineWorkingPlanCount(this.companyCode,currentDate,this.deviceTypeValue)
       if(res && res.code==200) {
-        const {xAxis, overNum, aveElec, aveTime} = res.data
+        const {xAxis, overNum, aveElec} = res.data
+        let aveTime = (res.data.aveTime).map(item => {
+          return parseFloat(item).toFixed(2)
+        })
         this.myChartData = {
           xAxis: xAxis,
           overNum: overNum,
