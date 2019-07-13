@@ -15,6 +15,13 @@ axios.interceptors.request.use(config => {
     /* if (store.state.token) {
       config.headers = {token: store.state.token}
     } */
+    // 时间戳(解决get请求IE下缓存问题)
+    if (config.method === 'get') {
+        config.params = {
+            t: Date.parse(new Date()),
+            ...config.params
+        }
+    }
     return config
   }, error => {
     return Promise.reject(error)

@@ -15,7 +15,7 @@
       @showdialog="showdialogFun"
     />
     
-    <div class="sbhl_overview_navBtn" @click="isOpenedNav = !isOpenedNav">
+    <div class="sbhl_overview_navBtn" @click.stop="isOpenedNav = !isOpenedNav">
       <img src="../../assets/images/icon_menu-spread.png" />
     </div>
     <div class="sbhl_pageNav_box" v-if="isOpenedNav">
@@ -312,12 +312,32 @@
         //12 ：代表 按年统计
         this.getDeviceAllData(this.companyCode,this.orgCode,'12')
       }, 10000)
+
+
+      document.body.addEventListener('click',() =>{
+        // console.log('yyy:',)
+        this.isOpenedNav = false
+      })
       
     },
     methods: {
       //左上部分--右侧本日本月本年后台请求数据
       async getDeviceAllData(companyCode, orgCode, requestType){
-        const currentDateStr = moment(new Date()).format('YYYY-MM-DD');
+        // 日期规则：2019.06.11 8：00 ~ 2019.06.12 8：00 日期为2019.06.11
+        let currentDateStr = ''; // 目标日期
+        const todayDateStr = moment(new Date()).format('YYYY-MM-DD'); // 今日日期
+        const yesterdayStr = moment().subtract(1, 'day').format('YYYY-MM-DD'); // 昨日
+        const currentHour = moment().hour() // 值从0~23
+        // console.log('currentHour:',currentHour)
+        // console.log('yesterdayStr:',yesterdayStr)
+        // 如果当前小时<8时，日期取昨天的日期，如果当前小时>=8小时，日期取当前日期
+        if (currentHour < 8) {
+          currentDateStr = yesterdayStr
+        } else {
+          currentDateStr = moment(new Date()).format('YYYY-MM-DD')
+        }
+
+        // return;
         switch (requestType){
           case '01' :  //左上部分所有数据
             const res01 = await reqCountDeviceMain(companyCode, orgCode, requestType,currentDateStr)
@@ -1446,6 +1466,7 @@
       font-size: 20px;
       font-weight: bold;
       cursor: pointer;
+      &:hover{ color:#fff; background-color:#4787f6;}
     }
   }
   }

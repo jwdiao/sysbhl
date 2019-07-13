@@ -1,11 +1,12 @@
 <template>
 <div class="common_bg common_bg02">
   <CommonHead
-    :isShowBackBtn="true"
+    :isShowBackBtn="false"
     :isShowCurrentTime="false"
     :titleText="`${companyName}设备故障信息`"
     @backBtnClick="handleBackBtn"
   />
+  <CommonNav current="DeviceFailure" />
   <ul class="tab">
     <li
       v-for="item in tabList" :key="item.value"
@@ -23,42 +24,14 @@
 				<img class="device_img" src="../../assets/images/DeviceConnect_title.png" />
       </el-col>
       <el-col :span="20" class="common_select deviceFailure_condition" v-if="currentTab.value=='current'">
-        <el-select v-model="centerNameValue" placeholder="请选择加工中心">
-          <el-option
-            v-for="item in centerOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          ></el-option>
-        </el-select>
-        <el-select v-model="craftValue" placeholder="请选择工艺类型" class="marginLeft15">
+        <el-select v-model="craftValue" placeholder="请选择工艺类型">
           <el-option
             v-for="item in craftOptions"
             :key="item.value"
             :label="item.label"
             :value="item.value"
           ></el-option>
-        </el-select>
-        <div class="marginLeft15 inlineBlock common-btn" @click="searchFun">搜索</div>
-      </el-col>
-      <el-col :span="20" class="common_select deviceFailure_condition" v-if="currentTab.value=='history'">
-        <el-date-picker
-          v-model="startDateValue"
-          type="date"
-          :picker-options="pickerOptionsStart"
-          value-format="yyyy-MM-dd"
-          :clearable="false"
-          placeholder="选择开始日期">
-        </el-date-picker>
-        <el-date-picker
-          class="marginLeft15"
-          v-model="endDateValue"
-          type="date"
-          :picker-options="pickerOptionsEnd"
-          value-format="yyyy-MM-dd"
-          :clearable="false"
-          placeholder="选择结束日期">
-        </el-date-picker>
+        </el-select>        
         <el-select v-model="centerNameValue" placeholder="请选择加工中心" class="marginLeft15">
           <el-option
             v-for="item in centerOptions"
@@ -67,15 +40,46 @@
             :value="item.value"
           ></el-option>
         </el-select>
-        <el-select v-model="craftValue" placeholder="请选择工艺类型" class="marginLeft15">
+
+        <div class="marginLeft15 inlineBlock common-btn" @click="searchFun">搜索</div>
+      </el-col>
+      <el-col :span="20" class="common_select deviceFailure_condition" v-if="currentTab.value=='history'">
+        <el-date-picker
+          v-model="startDateValue"
+          :editable="false"
+          :clearable="false"
+          type="date" style="width:150px;"
+          :picker-options="pickerOptionsStart"
+          value-format="yyyy-MM-dd"
+          placeholder="选择开始日期">
+        </el-date-picker>
+        <span style="padding-left:5px;padding-right:5px;color:#fff">-</span>
+        <el-date-picker
+          v-model="endDateValue"
+          :editable="false"
+          :clearable="false"
+          type="date" style="width:150px;"
+          :picker-options="pickerOptionsEnd"
+          value-format="yyyy-MM-dd"
+          placeholder="选择结束日期">
+        </el-date-picker>
+        <el-select v-model="craftValue" placeholder="请选择工艺类型" class="marginLeft10">
           <el-option
             v-for="item in craftOptions"
             :key="item.value"
             :label="item.label"
             :value="item.value"
           ></el-option>
+        </el-select>        
+        <el-select v-model="centerNameValue" placeholder="请选择加工中心" class="marginLeft10">
+          <el-option
+            v-for="item in centerOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
         </el-select>
-        <el-select v-model="machineTypeValue" placeholder="请选择机床类型" class="marginLeft15">
+        <el-select v-model="machineTypeValue" placeholder="请选择机床类型" class="marginLeft10">
           <el-option
             v-for="item in machineTypeOptions"
             :key="item.value"
@@ -83,21 +87,16 @@
             :value="item.value"
           ></el-option>
         </el-select>
-<!--         <el-select v-model="FailureValue" placeholder="请选择" class="marginLeft15">
-          <el-option
-            v-for="item in FailureOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          ></el-option>
-        </el-select> -->
-        <div class="marginLeft15 search_input">
+        <div class="marginLeft10 search_input">
+          <el-input v-model="machineModel" placeholder="手动输入设备型号" clearable></el-input>
+        </div>        
+        <div class="marginLeft10 search_input">
           <el-input v-model="machineNo" placeholder="手动输入设备编号" clearable></el-input>
         </div>
-        <div class="marginLeft15 search_input">
+        <div class="marginLeft10 search_input">
           <el-input v-model="machineName" placeholder="手动输入设备名称" clearable></el-input>
         </div>
-        <div class="marginLeft15 inlineBlock common-btn" @click="searchFun">查询</div>
+        <div class="marginLeft10 inlineBlock common-btn" @click="searchFun">查询</div>
         <!-- <div class="marginLeft15 inlineBlock common-btn2">导出</div> -->
       </el-col>
     </el-row>
@@ -106,10 +105,11 @@
 				<div :class="{'common-table device_table': true, 'device_table-current':currentTab.value=='current'}">
 				    <div class="table-thead">
 							<span class="table-td table-td01">序号</span>
-							<span class="table-td table-td02">设备编号</span>
-							<span class="table-td table-td03">设备名称</span>
-              <span class="table-td table-td04">开始时间</span>
-              <span class="table-td table-td05" v-if="currentTab.value=='history'">结束时间</span>
+							<span class="table-td table-td02">设备型号</span>
+							<span class="table-td table-td03">设备编号</span>
+							<span class="table-td table-td04">设备名称</span>
+              <span class="table-td table-td05">开始时间</span>
+              <span class="table-td table-td06" v-if="currentTab.value=='history'">结束时间</span>
 							<!-- <span class="table-td table-td06">故障时间</span> -->
               <span class="table-td table-td07">故障时长</span>
 							<span class="table-td table-td08">故障类别</span>
@@ -124,14 +124,15 @@
 									class="table-tr"
 								>
 									<span class="table-td table-td01">{{item.num}}</span>
-									<span class="table-td table-td02">{{item.machineNo}}</span>
-									<span class="table-td table-td03 ellipsis table-td-red">{{item.machineName}}</span>
-                  <span class="table-td table-td04">{{item.beginDate}}</span>
-                  <span class="table-td table-td05" v-if="currentTab.value=='history'">{{item.endDate}}</span>
+									<span class="table-td table-td02">{{item.machineModel}}</span>
+									<span class="table-td table-td03">{{item.machineNo}}</span>
+									<span class="table-td table-td04 ellipsis table-td-red">{{item.machineName}}</span>
+                  <span class="table-td table-td05">{{item.beginDate}}</span>
+                  <span class="table-td table-td06" v-if="currentTab.value=='history'">{{item.endDate}}</span>
                   <!-- <span class="table-td table-td06">{{item.updateTime}}</span> -->
 									<span class="table-td table-td07">{{item.runTime}}</span>
 									<span class="table-td table-td08">{{item.almClass}}</span>
-									<span class="table-td table-td09">{{item.almCode}}</span>
+									<span class="table-td table-td09 textCut" :title="item.almCode">{{item.almCode}}</span>
 									<span class="table-td table-td10">{{item.almMsg}}</span>
 								</div>
 							</div>
@@ -161,11 +162,15 @@
 <script>
 import moment from 'moment'
 import CommonHead from '@/components/Head'
-import { reqTypecode,reqCurrentFailureList,reqHistoryFailureList } from '@/api'
+import CommonNav from '@/components/Nav'
+import {
+  reqGroupList,reqCenterList,reqMachineTypeList,
+  reqCurrentFailureList,reqHistoryFailureList, } from '@/api'
 export default {
   name: 'DeviceFailure',
   components: {
     CommonHead,
+    CommonNav
   },
   data() {
     return {
@@ -188,14 +193,7 @@ export default {
       craftOptions: [], // 工艺下拉值,
       machineTypeValue: '', // 机床类型
       machineTypeOptions: [], // 机床类型下拉值,
-/*       FailureValue: '', // 故障值
-      FailureOptions: [{ // 故障下拉值
-        value: '全部',
-        label: '全部'
-      },{
-        value: '下料',
-        label: '下料'
-      }], */
+      machineModel: '', // 设备型号
       machineNo: '', // 设备编号
       machineName: '', // 设备名称
       deviceList: [], // 故障列表
@@ -204,15 +202,15 @@ export default {
       total: 0, // 总页数
       dateStr: '', // 日期
       startDateValue: moment(new Date()).format('YYYY-MM')+'-01', // 开始日期
-      endDateValue: moment(new Date()).format('YYYY-MM-DD'), // 结束日期
+      endDateValue: moment().subtract(1,'day').format('YYYY-MM-DD'), // 结束日期
       pickerOptionsStart:{
         disabledDate(time) {
-            return time.getTime() > Date.now();
+            return time.getTime() > moment().subtract(1,'day');
         }
       },
       pickerOptionsEnd:{
         disabledDate(time) {
-            return time.getTime() > Date.now();
+            return time.getTime() > moment().subtract(1,'day');
         }
       },
     }
@@ -256,7 +254,6 @@ export default {
       this.centerNameValue = ''; // 加工中心值
       this.craftValue = ''; // 工艺值
       this.machineTypeValue = ''; // 机床类型
-      // this.FailureValue = ''; // 故障值
 
       this.pageNum = 1;
       this.pageSize = 20;
@@ -280,7 +277,7 @@ export default {
     },
     // 获取工艺类型
     async getCraftOption() {
-      const res = await reqTypecode(this.companyCode, '01')
+      const res = await reqGroupList(this.companyCode)
       if (res && res.code === 200) {
         this.craftOptions = [
           { 
@@ -289,10 +286,11 @@ export default {
           }
         ]
         const dataArr = res.data
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.firstGroupName,
+            value: item.firstGroupCode
           }
           this.craftOptions.push(obj)
         })
@@ -300,7 +298,7 @@ export default {
     },
     // 获取加工中心下拉
     async getCenterOption() {
-      const res = await reqTypecode(this.companyCode, '03')
+      const res = await reqCenterList(this.companyCode)
       if (res && res.code === 200) {
         this.centerOptions = [
           { 
@@ -309,10 +307,11 @@ export default {
           }
         ]
         const dataArr = res.data
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.workCenterName,
+            value: item.workCenterCode
           }
           this.centerOptions.push(obj)
         })
@@ -320,7 +319,7 @@ export default {
     },
     // 获取机床类型下拉
     async getMachineOption() {
-      const res = await reqTypecode(this.companyCode, '02')
+      const res = await reqMachineTypeList(this.companyCode)
       if (res && res.code === 200) {
         this.machineTypeOptions = [
           { 
@@ -328,11 +327,12 @@ export default {
             label: '全部机床类型'
           }
         ]
-        const dataArr = res.data
+        const dataArr = res.data.list
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.typeName,
+            value: item.typeCode
           }
           this.machineTypeOptions.push(obj)
         })
@@ -346,15 +346,9 @@ export default {
           companyCode: this.companyCode, // 公司编码
           beginDate: this.dateStr, // 时间
           firstGroupCode: this.craftValue, // 工艺类型
-          // firstGroupName: "", // 工艺类型name
-          // machineName: this.machineName, // 设备名称
-          // machineNo: this.machineNo, // 设备编码
           machineStatus: 4, // 设备状态
-          // machineTypeCode: this.machineTypeValue, // 机床类型code
-          // machineTypeName: "", // 机床类型name
-          workCenterCode: this.centerNameValue, // 加工中心code
-          // workCenterName: "" // 加工中心name
-        }     
+          workCenterCode: this.centerNameValue // 加工中心code
+        }
       }
 
       let endTimeValue = '' // 结束时间处理
@@ -375,14 +369,12 @@ export default {
           endDate: endTimeValue, // 结束日期
           // endDate: this.endDateValue + ' '+ moment(new Date()).format('HH:mm:ss'), // 结束日期
           firstGroupCode: this.craftValue, // 工艺类型
-          // firstGroupName: "", // 工艺类型name
           machineName: this.machineName, // 设备名称
           machineNo: this.machineNo, // 设备编码
+          machineModel: this.machineModel, // 设备型号
           machineStatus: 4, // 设备状态
           machineTypeCode: this.machineTypeValue, // 机床类型code
-          // machineTypeName: "", // 机床类型name
           workCenterCode: this.centerNameValue, // 加工中心code
-          // workCenterName: "" // 加工中心name
         }     
       }
       
@@ -398,6 +390,7 @@ export default {
         this.deviceList = dataArr.map((item, index) => {
           return {
             num: ((this.pageNum - 1) * this.pageSize) + (index + 1), // 序号
+            machineModel: item.machineModel, // 设备型号
             machineNo: item.machineNo, // 设备编号
             machineName: item.machineName, // 设备名称
             beginDate: moment(item.beginDate).format("YYYY-MM-DD HH:mm:ss"), // 故障开始时间
@@ -538,9 +531,9 @@ export default {
 }
 .table-td01{width: 5%;}
 .table-td02{width: 10%;}
-.table-td03{width: 15%;}
+.table-td03{width: 10%;}
 .table-td04{width: 10%;}
-.table-td05{width: 15%;}
+.table-td05{width: 10%;}
 .table-td06{width: 10%;}
 .table-td07{width: 10%;}
 .table-td08{width: 10%;}
@@ -550,9 +543,10 @@ export default {
 .device_table-current{
   .table-td01{width: 5%;}
   .table-td02{width: 10%;}
-  .table-td03{width: 15%;}
+  .table-td03{width: 10%;}
   .table-td04{width: 10%;}
-  .table-td07{width: 15%;}
+  .table-td05{width: 10%;}
+  .table-td07{width: 10%;}
   .table-td08{width: 15%;}
   .table-td09{width: 15%;}
   .table-td10{width: 15%;}

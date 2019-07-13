@@ -1,9 +1,10 @@
-const webpack = require('webpack')
 module.exports = {
-    // 基本路径
-    // baseUrl: './', //测试线上地址 // 测试可以ok
-    baseUrl: '/sanysbhlreport/', //正式线上地址
-    outputDir: './sanysbhlreport',//正式线上地址
-    // baseUrl: '/sanysbhlreporttest/', //测试线上地址
-    // outputDir: './sanysbhlreporttest',//测试线上地址
-  }
+  // // "build": "vue-cli-service build"
+    // baseUrl从Vue CLI3.3起弃用，改为pubilcPath。部署应用包时的基本URL。默认'/'
+    baseUrl: process.env.NODE_ENV === 'production' ? '/sanysbhlreport/' : '/sanysbhlreporttest/',
+    // 生产环境构建文件的目录
+    outputDir: process.env.NODE_ENV === 'production' ? 'sanysbhlreport' : 'sanysbhlreporttest',
+    devServer: {
+
+    }
+}

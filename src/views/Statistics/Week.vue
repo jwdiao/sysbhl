@@ -6,6 +6,7 @@
     :titleText="`${companyName}统计报表`"
     @backBtnClick="handleBackBtn"
   />
+  <CommonNav current="WeekStatistics" />
   <div class="common_main common_blockColor padding20">
     <div class="week_container">
       <div class="week_top">
@@ -26,7 +27,15 @@
               :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-model="centerNameValue" placeholder="请选择" class="marginLeft15">
+          <el-select v-model="craftValue" placeholder="请选择工艺类型" class="marginLeft15">
+            <el-option
+              v-for="item in craftOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>          
+          <el-select v-model="centerNameValue" placeholder="请选择加工中心" class="marginLeft15">
             <el-option
               v-for="item in centerOptions"
               :key="item.value"
@@ -34,14 +43,9 @@
               :value="item.value">
             </el-option>
           </el-select>
-          <el-select v-model="craftValue" placeholder="请选择" class="marginLeft15">
-            <el-option
-              v-for="item in craftOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
+          <div class="marginLeft15 search_input">
+            <el-input v-model="machineModel" placeholder="手动输入设备型号" clearable></el-input>
+          </div>          
           <div class="marginLeft15 search_input">
             <el-input v-model="machineNo" placeholder="手动输入设备编号" clearable></el-input>
           </div>
@@ -57,9 +61,10 @@
       <div class="week_bottom">
         <div class="common-table week_table">
           <el-scrollbar class="xscrollbar">
-          <div style="width:3900px;height:100%">
+          <div style="width:3540px;height:100%">
             <div class="table-thead">
               <span class="table-td">序号</span>
+              <span class="table-td">设备型号</span>
               <span class="table-td">设备编号</span>
               <span class="table-td table-td03">设备名称</span>
               <span class="table-td">在线时间</span>
@@ -83,14 +88,15 @@
               <span class="table-td">故障率</span>
               <span class="table-td">上周故障率</span>
               <span class="table-td">故障率上升/下降</span>
-              <span class="table-td">计划完成率</span>
+              <!-- <span class="table-td">计划完成率</span>
               <span class="table-td table-td20">上周计划完成率</span>
-              <span class="table-td table-td20">计划完成率上升/下降</span>
+              <span class="table-td table-td20">计划完成率上升/下降</span> -->
             </div>
             <div class="table-tbodyBox">
               <el-scrollbar class="table-tbody">
               <div class="table-tr" v-for="(item,index) in deviceList" :key="index">
                 <span class="table-td">{{item.num}}</span>
+                <span class="table-td">{{item.machineModel}}</span>
                 <span class="table-td">{{item.machineNo}}</span>
                 <span class="table-td">{{item.machineName}}</span>
                 <span class="table-td">{{item.onLineTime | secondsToHour}}h</span> <!-- 在线时间 -->
@@ -99,8 +105,8 @@
                 <span class="table-td">{{item.prevOnLineRate | toPercent}}%</span> <!-- 上周在线率 -->
                 <span class="table-td">
                   {{item.ringRatioOnLineRate | toPercent}}%
-                  <img v-if="parseFloat(item.ringRatioOnLineRate)>=0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
-                  <img v-else src="../../assets/images/common_downArrow.png" style="height: 14px;" />
+                  <img v-if="parseFloat(item.ringRatioOnLineRate)>0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
+                  <img v-else-if="parseFloat(item.ringRatioOnLineRate)<0" src="../../assets/images/common_downArrow.png" style="height: 14px;" />
                 </span> <!-- 同比在线率 -->
                 <span class="table-td">{{item.bootTime | secondsToHour}}h</span><!-- 开机时间 -->
                 <span class="table-td">{{item.prevBootTime | secondsToHour}}h</span><!-- 上周开机时间 -->
@@ -108,8 +114,8 @@
                 <span class="table-td">{{item.prevBootRate | toPercent}}%</span><!-- 上周开机率 -->
                 <span class="table-td">
                   {{item.ringRatioBootRate | toPercent}}%
-                  <img v-if="parseFloat(item.ringRatioBootRate)>=0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
-                  <img v-else src="../../assets/images/common_downArrow.png" style="height: 14px;" />
+                  <img v-if="parseFloat(item.ringRatioBootRate)>0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
+                  <img v-else-if="parseFloat(item.ringRatioBootRate)<0" src="../../assets/images/common_downArrow.png" style="height: 14px;" />
                 </span><!-- 同比开机率 -->
                 <span class="table-td">{{item.startupTime | secondsToHour}}h</span><!-- 作业时间 -->
                 <span class="table-td">{{item.prevStartupTime | secondsToHour}}s</span><!-- 上周作业时间 -->
@@ -117,30 +123,31 @@
                 <span class="table-td">{{item.prevStartupRate | toPercent}}%</span><!-- 上周作业率 -->
                 <span class="table-td">
                   {{item.ringRatioStartupRate | toPercent}}%
-                  <img v-if="parseFloat(item.ringRatioStartupRate)>=0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
-                  <img v-else src="../../assets/images/common_downArrow.png" style="height: 14px;" />
+                  <img v-if="parseFloat(item.ringRatioStartupRate)>0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
+                  <img v-else-if="parseFloat(item.ringRatioStartupRate)<0" src="../../assets/images/common_downArrow.png" style="height: 14px;" />
                 </span><!-- 同比作业率 -->
                 <span class="table-td">{{item.utilizationRate | toPercent}}%</span><!-- 利用率 -->
                 <span class="table-td">{{item.prevUtilizationRate | toPercent}}%</span><!-- 上周利用率 -->
                 <span class="table-td">
                   {{item.ringRatioUtilizationRate | toPercent}}%
-                  <img v-if="parseFloat(item.ringRatioUtilizationRate)>=0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
-                  <img v-else src="../../assets/images/common_downArrow.png" style="height: 14px;" />
+                  <img v-if="parseFloat(item.ringRatioUtilizationRate)>0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
+                  <img v-else-if="parseFloat(item.ringRatioUtilizationRate)<0" src="../../assets/images/common_downArrow.png" style="height: 14px;" />
                 </span><!-- 同比利用率 -->
                 <span class="table-td">{{item.failureRate | toPercent}}%</span><!-- 故障率 -->
                 <span class="table-td">{{item.prevFailureRate | toPercent}}%</span><!-- 上周故障率 -->
                 <span class="table-td">
                   {{item.ringRatioFailureRate | toPercent}}%
-                  <img v-if="parseFloat(item.ringRatioFailureRate)>=0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
-                  <img v-else src="../../assets/images/common_downArrow.png" style="height: 14px;" />
+                  <img v-if="parseFloat(item.ringRatioFailureRate)>0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
+                  <img v-else-if="parseFloat(item.ringRatioFailureRate)<0" src="../../assets/images/common_downArrow.png" style="height: 14px;" />
                 </span><!-- 同比故障率 -->
-                <span class="table-td">{{item.planCompletionRate | toPercent}}%</span><!-- 计划完成率 -->
-                <span class="table-td table-td20">{{item.prevPlanCompletionRate | toPercent}}%</span><!-- 上周计划完成率 -->
-                <span class="table-td table-td20">
+                <!-- <span class="table-td">{{item.planCompletionRate | toPercent}}%</span>计划完成率 -->
+                <!-- <span class="table-td table-td20">{{item.prevPlanCompletionRate | toPercent}}%</span>上周计划完成率 -->
+                <!-- <span class="table-td table-td20">
                   {{item.ringRatioPlanCompletionRate | toPercent}}%
                   <img v-if="parseFloat(item.ringRatioPlanCompletionRate)>=0" src="../../assets/images/common_upArrow.png" style="height: 14px;" />
                   <img v-else src="../../assets/images/common_downArrow.png" style="height: 14px;" />
-                </span><!-- 同比计划完成率 -->
+                </span> -->
+                <!-- 同比计划完成率 -->
               </div>
               </el-scrollbar> 
             </div>
@@ -186,11 +193,17 @@
 <script>
 import _ from 'lodash'
 import CommonHead from '@/components/Head'
-import { reqTypecode, reqReportRateFind, reqReportRateExportExcel } from '@/api'
+import CommonNav from '@/components/Nav'
+import {
+  reqTypecode,
+  reqGroupList, reqCenterList, reqMachineTypeList,
+  reqReportRateFind, reqReportRateExportExcel } from '@/api'
+import { _SessionStorageObj } from '@/utils'  
 export default {
   name: 'Week',
   components: {
     CommonHead,
+    CommonNav
   },
   data() {
     return {
@@ -211,45 +224,14 @@ export default {
       centerOptions: [], // 加工中心下拉值,
       craftValue: '', // 工艺值
       craftOptions: [], // 工艺下拉值,
+      machineModel:'', // 设备型号
       machineNo: '', // 设备编号
       machineName: '', // 设备名称
       pageNum: 1, // 当前页
       pageSize: 20, // 每页多少条
       total: 0, // 总页数
       deviceList: [], // 设备列表
-      cities: [
-        /* {label: '在线时间', value: 'onLineTime'},
-        {label: '上周在线时间', value: 'prevOnLineTime'},
-
-        {label: '在线率', value: 'onLineRate'},
-        {label: '上周在线率', value: 'prevOnLineRate'},
-        {label: '同比在线率', value: 'ringRatioOnLineRate'},
-
-        {label: '开机时间', value: 'bootTime'},
-        {label: '上周开机时间', value: 'prevBootTime'},
-
-        {label: '开机率', value: 'bootRate'},
-        {label: '上周开机率', value: 'prevBootRate'},
-        {label: '同比开机率', value: 'ringRatioBootRate'},
-
-        {label: '作业时间', value: 'startupTime'},
-        {label: '上周作业时间', value: 'prevStartupTime'},
-        {label: '作业率', value: 'startupRate'},
-        {label: '上周作业率', value: 'prevStartupRate'},
-        {label: '同比作业率', value: 'ringRatioStartupRate'},
-
-        {label: '利用率', value: 'utilizationRate'},
-        {label: '上周利用率', value: 'prevUtilizationRate'},
-        {label: '同比利用率', value: 'ringRatioUtilizationRate'},
-
-        {label: '故障率', value: 'failureRate'},
-        {label: '上周故障率', value: 'prevFailureRate'},
-        {label: '同比故障率', value: 'ringRatioFailureRate'},
-
-        {label: '计划完成率', value: 'planCompletionRate'},
-        {label: '上周计划完成率', value: 'prevPlanCompletionRate'},
-        {label: '同比计划完成率', value: 'ringRatioPlanCompletionRate'}, */
-      ],
+      cities: [],
       checkedCities: [], // 选中的选项
       showExportDialog: false
     }
@@ -274,13 +256,10 @@ export default {
   },
   mounted() {
     // 从localStory里面取选中的公司
-    const sbhlSelectedCompanyStr = localStorage.getItem('sbhl-OverView-SelectedCompany')
-    if(sbhlSelectedCompanyStr && sbhlSelectedCompanyStr!==undefined){
-      const sbhlSelectedCompanyObj = JSON.parse(sbhlSelectedCompanyStr)
+    const sbhlSelectedCompanyObj = _SessionStorageObj.get('sbhl-OverView-SelectedCompany')
+    if (sbhlSelectedCompanyObj) {
       this.companyCode = sbhlSelectedCompanyObj.value; // 公司编码
       this.companyName = sbhlSelectedCompanyObj.label // 公司名字
-    } else {
-      // localStorage.setItem('sbhl-OverView-SelectedCompany',JSON.stringify({label:this.companyName,value:this.companyCode}))
     }
 
     // 获取工艺类型
@@ -304,7 +283,7 @@ export default {
     },
     // 获取工艺类型
     async getCraftOption() {
-      const res = await reqTypecode(this.companyCode, '01')
+      const res = await reqGroupList(this.companyCode)
       if (res && res.code === 200) {
         this.craftOptions = [
           { 
@@ -313,10 +292,11 @@ export default {
           }
         ]
         const dataArr = res.data
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.firstGroupName,
+            value: item.firstGroupCode
           }
           this.craftOptions.push(obj)
         })
@@ -324,7 +304,7 @@ export default {
     },
     // 获取加工中心下拉
     async getCenterOption() {
-      const res = await reqTypecode(this.companyCode, '03')
+      const res = await reqCenterList(this.companyCode)
       if (res && res.code === 200) {
         this.centerOptions = [
           { 
@@ -333,10 +313,11 @@ export default {
           }
         ]
         const dataArr = res.data
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.workCenterName,
+            value: item.workCenterCode
           }
           this.centerOptions.push(obj)
         })
@@ -364,12 +345,11 @@ export default {
           "companyCode": this.companyCode,
           "excelShettArr": [],
           "firstGroupCode": this.craftValue, // 工艺
-          // "firstGroupName": "",
+          "machineModel": this.machineModel, // 设备型号
           "machineName": this.machineName, // 设备名称
           "machineNo": this.machineNo, // 设备编号
           "weekType": this.weekType, // 周类型
           "workCenterCode": this.centerNameValue, // 加工中心code
-          // "workCenterName": ""
         }
       }
       const res = await reqReportRateFind(params);

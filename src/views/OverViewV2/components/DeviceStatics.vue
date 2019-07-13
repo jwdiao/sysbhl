@@ -285,8 +285,21 @@ export default {
     // 获取数据
     async getEchartsData() {
       this.companyCode = JSON.parse(this.companyCodeStr).value; // 公司code
-      const currentDate = moment(new Date()).format('YYYY-MM-DD'); // 当前日期
-      const res = await reqMachineWorkingPlanCount(this.companyCode,currentDate,this.deviceTypeValue)
+      // const currentDate = moment(new Date()).format('YYYY-MM-DD'); // 当前日期
+      // 日期规则：2019.06.11 8：00 ~ 2019.06.12 8：00 日期为2019.06.11
+      let currentDateStr = ''; // 目标日期
+      const todayDateStr = moment(new Date()).format('YYYY-MM-DD'); // 今日日期
+      const yesterdayStr = moment().subtract(1, 'day').format('YYYY-MM-DD'); // 昨日
+      const currentHour = moment().hour() // 值从0~23
+      // console.log('currentHour:',currentHour)
+      // console.log('yesterdayStr:',yesterdayStr)
+      // 如果当前小时<8时，日期取昨天的日期，如果当前小时>=8小时，日期取当前日期
+      if (currentHour < 8) {
+        currentDateStr = yesterdayStr
+      } else {
+        currentDateStr = moment(new Date()).format('YYYY-MM-DD')
+      }
+      const res = await reqMachineWorkingPlanCount(this.companyCode,currentDateStr,this.deviceTypeValue)
       if(res && res.code==200) {
         const {xAxis, overNum, aveElec} = res.data
         let aveTime = (res.data.aveTime).map(item => {

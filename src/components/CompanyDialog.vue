@@ -110,7 +110,8 @@ export default {
       obj = this.companyOptions.find(item => {
         return item.value === code
       })
-      return JSON.stringify(obj);
+      return obj
+      // return JSON.stringify(obj);
     }
   }
 }

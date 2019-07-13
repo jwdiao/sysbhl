@@ -181,3 +181,13 @@ body{font-size: 12px;}
 .gray{
   color:#7b7f81
 }
+
+.textCut {
+  overflow: hidden;
+  text-overflow:ellipsis;
+  white-space: nowrap;
+  
+}
+.fill{
+  height: 100%;width:100%
+}

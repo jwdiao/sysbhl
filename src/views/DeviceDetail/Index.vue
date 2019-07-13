@@ -1,7 +1,7 @@
 <template>
 	<div class="device">
 		<div class="device_head">
-			<div class="leftInfo" @click="$router.push('/DeviceList')" style="cursor:pointer"><img src="../../assets/images/common_back.png"></div>
+			<div class="leftInfo" @click="goBackFun" style="cursor:pointer"><img src="../../assets/images/common_back.png"></div>
 			<div class="title">{{companyName}}设备数据互联</div>
 			<div class="rightInfo">
 			</div>
@@ -341,9 +341,35 @@
 
 		},
 		methods: {
+			// 返回按钮
+			goBackFun() {
+				const fromRouter = this.$route.params.fromRouter
+				if (fromRouter) {
+					this.$router.push(fromRouter)
+				} else {
+					this.$router.push('/DeviceList')
+				}
+			},
+			getDayStrFun () {
+				// 日期规则：2019.06.11 8：00 ~ 2019.06.12 8：00 日期为2019.06.11
+        let currentDateStr = ''; // 目标日期
+        const todayDateStr = moment(new Date()).format('YYYY-MM-DD'); // 今日日期
+        const yesterdayStr = moment().subtract(1, 'day').format('YYYY-MM-DD'); // 昨日
+        const currentHour = moment().hour() // 值从0~23
+        // console.log('currentHour:',currentHour)
+        // console.log('yesterdayStr:',yesterdayStr)
+        // 如果当前小时<8时，日期取昨天的日期，如果当前小时>=8小时，日期取当前日期
+        if (currentHour < 8) {
+          currentDateStr = yesterdayStr
+        } else {
+          currentDateStr = moment(new Date()).format('YYYY-MM-DD')
+				}
+				return 	currentDateStr
+			},
 			//----------------右上角设备参数信息  start -------------->
 			async getDeviceParamsInfo(deviceID) {
-        const res = await reqDeviceRightList(deviceID)
+				const currentDateStr = this.getDayStrFun()
+        const res = await reqDeviceRightList(deviceID, currentDateStr)
 				if (res && res.code === 200) {
           if(res.data!==null){
             this.deviceData = res.data
@@ -404,7 +430,8 @@
 				}
 			},
       async getJGLDanwei(Danwei){
-			  const res = await reqJGLDanwei(Danwei)
+				const currentDateStr = this.getDayStrFun()
+			  const res = await reqJGLDanwei(Danwei, currentDateStr)
         if(res&&res.code===200){
 			    if(res.data!==null){
 			      this.danwei = res.data.dataUnit
@@ -488,10 +515,12 @@
 			},
 			// 饼图echarts和进度条数据 和 左上角设备工作状态和时间
 			async findMachineConnectioninfo(deviceID) {
-				const dateStr = moment(new Date()).format('YYYY-MM-DD');
+				// const dateStr = moment(new Date()).format('YYYY-MM-DD');
+				const currentDateStr = this.getDayStrFun()
 				const params = {
-					onemachineNo: deviceID,
-					date: dateStr
+					// onemachineNo: deviceID,
+					deviceID: deviceID,
+					date: currentDateStr
         }
         const res = await machineConnectioninfo(params);
 				this.progress[0].percentage = Math.floor(res.data.startupTime * 100 * 100) / 100 // 作业百分比
@@ -952,13 +981,12 @@
 									background-color: rgba(0, 186, 255, 0.2);
 									margin: 1px 0px;
 									font-size: 0.16rem;
-									color: #ffffff;
-									;
+									color: #00c7fa;
 								}
 
 								.bgTitle {
 									background: linear-gradient(rgba(51, 171, 251, 0.3), rgba(136, 209, 247, 0.3));
-									margin-right: 1px;
+									margin-right: 1px;color:#fff;
 								}
 							}
 

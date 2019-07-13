@@ -165,7 +165,21 @@ import {
 			}
 		},
 		mounted() {
-			this.currentDate = moment(new Date()).format('YYYY-MM-DD');
+			// 日期规则：2019.06.11 8：00 ~ 2019.06.12 8：00 日期为2019.06.11
+			let currentDateStr = ''; // 目标日期
+			const todayDateStr = moment(new Date()).format('YYYY-MM-DD'); // 今日日期
+			const yesterdayStr = moment().subtract(1, 'day').format('YYYY-MM-DD'); // 昨日
+			const currentHour = moment().hour() // 值从0~23
+			// console.log('currentHour:',currentHour)
+			// console.log('yesterdayStr:',yesterdayStr)
+			// 如果当前小时<8时，日期取昨天的日期，如果当前小时>=8小时，日期取当前日期
+			if (currentHour < 8) {
+				currentDateStr = yesterdayStr
+			} else {
+				currentDateStr = moment(new Date()).format('YYYY-MM-DD')
+			}
+			this.currentDate = currentDateStr;
+			// this.currentDate = moment(new Date()).format('YYYY-MM-DD');
 			this.getDeviceListFun()
 
 		},
@@ -250,6 +264,7 @@ import {
 							let obj = {
 								num: ((this.pageNum - 1) * this.pageSize) + (index + 1),
 								id: item.id,
+								plcType: item.plcType,
 								machineNo: item.machineNo, // 设备编号
 								machineName: item.machineName, // 设备名称
 								machineStatus: item.machineStatus, // 状态
@@ -377,7 +392,13 @@ import {
 			},
 			handleClickItem(item) {
 				localStorage.setItem('deviceID',JSON.stringify(item))
-				this.$router.push('/DeviceDetail');
+				// this.$router.push('/DeviceDetail');
+				const plcType = item.plcType;
+				if (plcType === '1') {
+					this.$router.replace({name:'DeviceDetail',params:{deviceInfoArr:item}})
+				} else if (plcType === '2') {
+					this.$router.replace({name:'DeviceDetailXmz',params:{deviceInfoArr:item}})
+				}
 			}
     },
     destroyed() {

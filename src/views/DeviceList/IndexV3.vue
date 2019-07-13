@@ -155,6 +155,7 @@
 						date: currentDate
 					}
 					res = await reqGetMachineInterConnectionSta(paramsObjCraft);
+					console.log('res:',res)
 				} else if (this.type=='02') { // 加工中心
 					const paramsObjCenter = {
 						companyCode: this.companyCode, // 子公司code

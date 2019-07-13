@@ -1,13 +1,14 @@
 <template>
 <div class="common_bg common_bg02">
   <CommonHead
-    :isShowBackBtn="true"
+    :isShowBackBtn="false"
     :isClickedTitle="true"
     :titleText="`${companyName}设备统计分析`"
     :isShowCurrentTime="false"
     @backBtnClick="handleBackBtn"
     @titleClick="handleTitleClick"
   />
+  <CommonNav current="Statistics" />
   <div class="common_main common_blockColor ">
     <div class="statistics_main">
       <div class="statistics_sort">
@@ -115,7 +116,7 @@
                   :value="item.value">
                 </el-option>
               </el-select>
-              <el-select v-model="bootRateValue" placeholder="开机率" class="common_select marginLeft10">
+              <el-select v-model="bootRateValue" placeholder="开机率" class="common_select marginLeft10" @change="handleRateFun">
                 <el-option
                   v-for="item in bootRateOptions"
                   :key="item.value"
@@ -130,18 +131,6 @@
 
         <div id="BarEchartsSort" class="statistics_echarts"></div>
         <div class="statistics_total">
-<!--           <div class="statistics_totalItem">
-            <p class="statistics_percent green">{{barEchartsData.maxValueObj.yData}}%</p>
-            <p class="statistics_label">最大  {{barEchartsData.maxValueObj.xAxis}}</p>
-          </div>
-          <div class="statistics_totalItem">
-            <p class="statistics_percent orange">{{barEchartsData.averageValue}}%</p>
-            <p class="statistics_label">平均效率</p>
-          </div>
-          <div class="statistics_totalItem">
-            <p class="statistics_percent red">{{(barEchartsData.minValueObj.yData==='0.00')?0:barEchartsData.minValueObj.yData}}%</p>
-            <p class="statistics_label">最小</p>
-          </div> -->
           <div class="statistics_totalItem">
             <p class="statistics_percent green">{{barEchartsData.maxValueObj.yData.value}}%</p>
             <p class="statistics_label">最大  {{barEchartsData.maxValueObj.xAxis}}</p>
@@ -168,21 +157,23 @@
         <div class="table statistics_table">
           <div class="table-thead">
             <span class="table-td table-td01">序号</span>
-            <span class="table-td table-td02">设备编号</span>
-            <span class="table-td table-td03">设备名称</span>
-            <span class="table-td table-td04">工艺类型</span>
-            <span class="table-td table-td05">工作中心</span>
-            <span class="table-td table-td06">{{getLabelByValue(bootRateValue)}}</span>
+            <span class="table-td table-td02">设备型号</span>
+            <span class="table-td table-td03">设备编号</span>
+            <span class="table-td table-td04">设备名称</span>
+            <span class="table-td table-td05">工艺类型</span>
+            <span class="table-td table-td06">工作中心</span>
+            <span class="table-td table-td07">{{getLabelByValue(bootRateValue)}}</span>
           </div>
           <div class="table-tbody" v-if="total>0">
             <el-scrollbar class="table-tbodyInner">
-              <div class="table-tr" v-for="item in deviceList" @click="handleClickDeviceItem(item.machineNo)">
+              <div class="table-tr" v-for="item in deviceList" @click="handleClickDeviceItem(item)">
                 <span class="table-td table-td01">{{item.num}}</span>
-                <span class="table-td table-td02">{{item.machineNo}}</span>
-                <span class="table-td table-td03">{{item.machineName}}</span>
-                <span class="table-td table-td04">{{item.firstGroupName}}</span>
-                <span class="table-td table-td05">{{item.workCenterName}}</span>
-                <span class="table-td table-td06">{{item.bootRate}}%</span>
+                <span class="table-td table-td02">{{item.machineModel}}</span>
+                <span class="table-td table-td03">{{item.machineNo}}</span>
+                <span class="table-td table-td04">{{item.machineName}}</span>
+                <span class="table-td table-td05">{{item.firstGroupName}}</span>
+                <span class="table-td table-td06">{{item.workCenterName}}</span>
+                <span class="table-td table-td07">{{item.bootRate}}%</span>
               </div>
             </el-scrollbar>
           </div>
@@ -215,23 +206,28 @@
         <img src="../../assets/images/common_close.png" />
       </div>
       <div class="lineEcharts">
-        <div class="statistics_echartsLine_title">{{currentDeviceMachineNo}}运行效率{{startDateStr}} 到 {{endDateStr}}</div>
+        <div class="statistics_echartsLine_title">
+          {{currentDeviceObj.machineModel}}{{currentDeviceObj.machineName}}
+          {{startDateStr}}到{{endDateStr}}的{{bootRateOptions.filter(item => item.value===bootRateValue)[0].label}}
+        </div>
         <div id="lineEcharts" class="statistics_echartsLine"></div>
       </div>
       <div class="marginTop20">
-        <div class="table statistics_echartsDialog_table">
+        <div class="table statistics_echartsDialog_table" :class="bootRateValue==='04'?'failureRate':''">
           <div class="table-thead">
             <span class="table-td table-td01">时间段</span>
-            <span class="table-td table-td02">运行时间</span>
-            <span class="table-td table-td03">开机时间</span>
+            <span class="table-td table-td02" v-if="bootRateValue!=='04'">作业时间</span>
+            <span class="table-td table-td03" v-if="bootRateValue!=='04'">开机时间</span>
+            <span class="table-td table-td02" v-if="bootRateValue==='04'">故障时间</span>
             <span class="table-td table-td04">{{getLabelByValue(bootRateValue)}}</span>
           </div>
           <div class="table-tbody" v-if="singleDeviceList.length>0">
             <el-scrollbar class="table-tbodyInner" >
               <div class="table-tr" v-for="(item, index) in singleDeviceList" :key="index">
                 <span class="table-td table-td01">{{item.dateTime}}</span>
-                <span class="table-td table-td02">{{item.runTime}}小时 </span>
-                <span class="table-td table-td03">{{item.startUpHour}}小时 </span>
+                <span class="table-td table-td02" v-if="bootRateValue!=='04'">{{item.runTime}}小时 </span>
+                <span class="table-td table-td03" v-if="bootRateValue!=='04'">{{item.startUpHour}}小时 </span>
+                <span class="table-td table-td02" v-if="bootRateValue==='04'">{{item.failureTime}}小时 </span>               
                 <span class="table-td table-td04">{{item.rateValue}}%</span>
               </div>
             </el-scrollbar>
@@ -251,17 +247,20 @@ import _ from 'lodash'
 import echarts from 'echarts'
 import moment from 'moment'
 import CommonHead from '@/components/Head'
+import CommonNav from '@/components/Nav'
 import {
-  reqTypecode,
+  reqGroupList,reqCenterList,reqMachineTypeList,
   reqMachineSortCount,
   reqMachineSortList,
   reqMachineHourSortCount,
   reqMachineHourSortList
-} from '../../api'
+} from '@/api'
+import { _SessionStorageObj } from '@/utils'
 export default {
   name: 'Statistics',
   components: {
     CommonHead,
+    CommonNav
   },
   data() {
     return {
@@ -279,12 +278,12 @@ export default {
       machineTypeOptions: [], // 机床类型opt
       machineTypeValue: '', // 机床类型value
       bootRateOptions: [
+        {label: '利用率', value: '03'},
         {label: '开机率', value: '01'},
         {label: '作业率', value: '02'},
-        {label: '利用率', value: '03'},
-        // {label: '计划完成率', value: '04'}
+        {label: '故障率', value: '04'}
       ], // 开机率下拉
-      bootRateValue: '01', // 开机率下拉值
+      bootRateValue: '03', // 下拉值(默认利用率)
       barEchartsDom: '', // 柱状图dom
       barEchartsData: { // 柱状图data
         xAxis : [],
@@ -304,7 +303,12 @@ export default {
       pageNum: 1,
       total: 1,
       dialogShow: false, // 弹窗是否显示
-      currentDeviceMachineNo: '', // 当前设备号
+      // 当前设备
+      currentDeviceObj: {
+        machineNo: '',
+        machineModel: '',
+        machineName: ''
+      },
       lineEchartsData: {}, // 折线图数据
       singleDeviceList: [] // 单台设备列表
     }
@@ -335,13 +339,10 @@ export default {
   },
   mounted() {
     // 从localStory里面取选中的公司
-    const sbhlSelectedCompanyStr = localStorage.getItem('sbhl-OverView-SelectedCompany')
-    if(sbhlSelectedCompanyStr && sbhlSelectedCompanyStr!==undefined){
-      const sbhlSelectedCompanyObj = JSON.parse(sbhlSelectedCompanyStr)
+    const sbhlSelectedCompanyObj = _SessionStorageObj.get('sbhl-OverView-SelectedCompany')
+    if (sbhlSelectedCompanyObj) {
       this.companyCode = sbhlSelectedCompanyObj.value; // 公司编码
       this.companyName = sbhlSelectedCompanyObj.label // 公司名字
-    } else {
-      // localStorage.setItem('sbhl-OverView-SelectedCompany',JSON.stringify({label:this.companyName,value:this.companyCode}))
     }
 
     this.currentDay = moment(new Date()).format('YYYY-MM-DD')
@@ -480,11 +481,17 @@ export default {
         this.$nextTick(()=> {
           if(document.getElementById('lineEcharts')){
             // this.renderEchartsLine(echarts.init(document.getElementById('lineEcharts')))
-            this.currentDeviceMachineNo = params.name
+            // console.log('click bar:',params)
+            const currentMachine = params.name.split('|')
+            this.currentDeviceObj = {
+              machineNo: currentMachine[0],
+              machineModel: currentMachine[1],
+              machineName: currentMachine[2]
+            }
             // 渲染折线图
-            this.getLineDataFun(params.name) // 设备编号
+            this.getLineDataFun(currentMachine[0]) // 设备编号
             // 渲染列表
-            this.getListSingleDataFun(params.name)
+            this.getListSingleDataFun(currentMachine[0])
           }
         })
     });
@@ -507,7 +514,7 @@ export default {
     },
     // 获取工艺类型
     async getCraftOption() {
-      const res = await reqTypecode(this.companyCode, '01')
+      const res = await reqGroupList(this.companyCode)
       if (res && res.code === 200) {
         this.craftOptions = [
           { 
@@ -516,18 +523,19 @@ export default {
           }
         ]
         const dataArr = res.data
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.firstGroupName,
+            value: item.firstGroupCode
           }
           this.craftOptions.push(obj)
         })
-      }
+      }      
     },
     // 获取加工中心下拉
     async getCenterOption() {
-      const res = await reqTypecode(this.companyCode, '03')
+      const res = await reqCenterList(this.companyCode)
       if (res && res.code === 200) {
         this.centerOptions = [
           { 
@@ -536,10 +544,11 @@ export default {
           }
         ]
         const dataArr = res.data
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.workCenterName,
+            value: item.workCenterCode
           }
           this.centerOptions.push(obj)
         })
@@ -547,7 +556,7 @@ export default {
     },
     // 获取机床类型下拉
     async getMachineOption() {
-      const res = await reqTypecode(this.companyCode, '02')
+      const res = await reqMachineTypeList(this.companyCode)
       if (res && res.code === 200) {
         this.machineTypeOptions = [
           { 
@@ -555,15 +564,25 @@ export default {
             label: '全部机床类型'
           }
         ]
-        const dataArr = res.data
+        const dataArr = res.data.list
+        if(!dataArr.length) return;
         dataArr.map((item) => {
           const obj = {
-            label: item.codeName,
-            value: item.codeCode
+            label: item.typeName,
+            value: item.typeCode
           }
           this.machineTypeOptions.push(obj)
         })
       }
+    },
+    handleRateFun() {
+      // 获取柱状图数据
+      this.getBarDataFun();
+
+      // 获取列表数据
+      this.pageNum = 1;
+      this.pageSize = 10;
+      this.getListDataFun();      
     },
     // 检索排名搜索
     searchFun() {
@@ -608,9 +627,7 @@ export default {
         if (listArr.length<=0) return;
         const lvArr = listArr.map(item => {
           return {
-            // xAxis: item.xAxis,
-            xAxis: item.machineName,
-            // yData: this.handleLvDataBar(item)
+            xAxis: item.machineModel+' '+item.machineName,
             yData: this.handleLvDataBar2(item)
           }
         })
@@ -656,9 +673,14 @@ export default {
       })
     },
     // 点击表格出现弹窗
-    handleClickDeviceItem(machineNo) {
+    handleClickDeviceItem(item) {
       this.dialogShow = true
-      this.currentDeviceMachineNo = machineNo
+      const machineNo = item.machineNo
+      this.currentDeviceObj = {
+        machineNo: machineNo,
+        machineModel: item.machineModel,
+        machineName: item.machineName
+      }
       // 渲染折线图
       this.getLineDataFun(machineNo) // 设备编号
       // 渲染列表
@@ -736,7 +758,7 @@ export default {
         },
         yAxis: {
             type: 'value',
-            name: '效率和时间', // 坐标轴名称
+            // name: '效率和时间', // 坐标轴名称
             max: 100,
             nameTextStyle: { // 坐标轴名称的文字样式
               color: '#fff',
@@ -872,11 +894,11 @@ export default {
      * 总耗电量 = 消耗电能 / 总数 
      * 计划完成率 = 完成工件数 / 计划工件数
      */
-      const idleTime = data.idleTime || 0 // 待机时间（秒）
-      const runTime = data.runTime || 0 // 作业时间（秒）
-      const naturalTime = data.naturalTime || 0 // 自然时间（秒）
+      const idleTime = data.idleTime*1 || 0 // 待机时间（秒）
+      const runTime = data.runTime*1 || 0 // 作业时间（秒）
+      const naturalTime = data.naturalTime*1 || 0 // 自然时间（秒）
+      const failureTime = data.failureTime*1 || 0 // 故障时间
       const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
-
       const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
       const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
 
@@ -898,19 +920,20 @@ export default {
       // 利用率
       let liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率/作业率）
 
-      // 计划完成率
-      /* let planFinishRate = 0
-      if (overProcedureNum) {
-        planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
-      } */
+      // 故障率
+      let failureRate = 0
+      if (failureTime) {
+        const trueFailureRate = (failureTime/naturalTime)*100
+        failureRate = trueFailureRate > 100 ? 100 : trueFailureRate.toFixed(2)
+      }
 
       if (this.bootRateValue === '02') { // 作业率
         return workRate
       } else if (this.bootRateValue === '03') { // 利用率
         return liyongLv
-      } else if (this.bootRateValue === '04') { // 计划完成率
-        // return planFinishRate
-      } else { // 开机率
+      } else if (this.bootRateValue === '04') { // 故障率
+        return failureRate
+      } else if (this.bootRateValue === '01'){ // 开机率
         return bootRate
       }
     },
@@ -929,6 +952,7 @@ export default {
       const idleTime = parseFloat(data.idleTime) || 0 // 待机时间（秒）
       const runTime = parseFloat(data.runTime) || 0 // 作业时间（秒）
       const naturalTime = parseFloat(data.natraulTime) || 0 // 自然时间（秒）
+      const failureTime = data.failureTime*1 || 0 // 故障时间
       const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
 
       const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
@@ -952,24 +976,26 @@ export default {
       // 利用率
       let liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率/作业率）
 
-      // 计划完成率
-      /* let planFinishRate = 0
-      if (overProcedureNum) {
-        planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
-      } */
+      // 故障率
+      let failureRate = 0
+      if (failureTime) {
+        const trueFailureRate = (failureTime/naturalTime)*100
+        failureRate = trueFailureRate > 100 ? 100 : trueFailureRate.toFixed(2)
+      }
 
       if (this.bootRateValue === '02') { // 作业率
         return workRate
       } else if (this.bootRateValue === '03') { // 利用率
         return liyongLv
-      } else if (this.bootRateValue === '04') { // 计划完成率
-        // return planFinishRate
+      } else if (this.bootRateValue === '04') { // 故障率
+        return failureRate
       } else { // 开机率
         return bootRate
       }
     },
     // 处理数据弹窗列表
     handleSingleDeviceListData(data) {
+      // debugger;
     /**
      * 逻辑规则：
      * 开机时间 = 作业时间 + 待机时间
@@ -982,11 +1008,13 @@ export default {
      */
       const idleTime = data.idleTime || 0 // 待机时间（秒）
       const runTime = data.runTime || 0 // 作业时间（秒）
-      const naturalTime = data.naturalTime || 0 // 自然时间（秒）
+      const naturalTime = data.naturalTime*1 || 0 // 自然时间（秒）
+      const failureTime = data.failureTime*1 || 0 // 故障时间
       const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
 
       const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
       const workHour = parseFloat((runTime/3600).toFixed(2))||0 // 作业小时数（作业时间）
+      const failureTimeHour = (failureTime/3600).toFixed(2) // 故障时间(小时)
 
       // const planProcedureNum = data.planProcedureNum || 0 // 计划工件数
       // const overProcedureNum = data.overProcedureNum || 0 // 完成工件数
@@ -1006,11 +1034,12 @@ export default {
       // 利用率
       let liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率/作业率）
 
-      // 计划完成率
-      /* let planFinishRate = 0
-      if (overProcedureNum) {
-        planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
-      } */
+      // 故障率
+      let failureRate = 0
+      if (failureTime) {
+        const trueFailureRate = (failureTime/naturalTime)*100
+        failureRate = trueFailureRate > 100 ? 100 : trueFailureRate.toFixed(2)
+      }
 
       if (this.bootRateValue === '02') { // 作业率
         return {
@@ -1026,8 +1055,14 @@ export default {
           startUpHour: startUpHour,
           rateValue: liyongLv
         }
-      } else if (this.bootRateValue === '04') { // 计划完成率
-        // return planFinishRate
+      } else if (this.bootRateValue === '04') { // 故障率
+        return {
+          dateTime: data.datetime,
+          // runTime: workHour,
+          // startUpHour: startUpHour,
+          failureTime: failureTimeHour,
+          rateValue: failureRate
+        }
       } else { // 开机率
         return {
           dateTime: data.datetime,
@@ -1054,6 +1089,7 @@ export default {
       const idleTime = parseFloat(data.idleTime) || 0 // 待机时间（秒）
       const runTime = parseFloat(data.runTime) || 0 // 作业时间（秒）
       const naturalTime = parseFloat(data.natraulTime) || 0 // 自然时间（秒）
+      const failureTime = data.failureTime*1 || 0 // 故障时间
       const naturalTimeHour = naturalTime / 3600 || 0 // 自然时间（小时）
 
       const startUpHour = parseFloat(((idleTime + runTime)/3600).toFixed(2))||0 // 开机小时数（开机时间）
@@ -1077,34 +1113,31 @@ export default {
       // 利用率
       let liyongLv = ((bootRate/100 * workRate/100)*100).toFixed(2) // 利用率（开机率/作业率）
 
-      // 计划完成率
-      /* let planFinishRate = 0
-      if (overProcedureNum) {
-        planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
-      } */
-
+      // 故障率
+      let failureRate = 0
+      if (failureTime) {
+        const trueFailureRate = (failureTime/naturalTime)*100
+        failureRate = trueFailureRate > 100 ? 100 : trueFailureRate.toFixed(2)
+      }
+      const paramsStr = data.machineNo +'|'+ data.machineModel +'|'+ data.machineName
       if (this.bootRateValue === '02') { // 作业率
-        // return workRate
         return {
-          name: data.machineNo,
+          name: paramsStr,
           value: workRate
         }
       } else if (this.bootRateValue === '03') { // 利用率
-        // return liyongLv
         return {
-          name: data.machineNo,
+          name: paramsStr,
           value: liyongLv
         }
-      } else if (this.bootRateValue === '04') { // 计划完成率
-        /* return {
-          name: data.machineNo,
-          value: planFinishRate
-        } */
-        // return planFinishRate
-      } else { // 开机率
-        // return bootRate
+      } else if (this.bootRateValue === '04') { // 故障率
         return {
-          name: data.machineNo,
+          name: paramsStr,
+          value: failureRate
+        }
+      } else { // 开机率
+        return {
+          name: paramsStr,
           value: bootRate
         }
       }
@@ -1197,11 +1230,12 @@ export default {
     overflow: hidden;
     .table-tr{ cursor: pointer; }
     .table-td01{ width: 10%; }
-    .table-td02{ width: 20%; }
+    .table-td02{ width: 15%; }
     .table-td03{ width: 15%; }
     .table-td04{ width: 15%; }
-    .table-td05{ width: 20%; }
-    .table-td06{ width: 20%; }
+    .table-td05{ width: 15%; }
+    .table-td06{ width: 15%; }
+    .table-td07{ width: 15%; }
   }
   .statistics-pagination{
 
@@ -1284,6 +1318,11 @@ export default {
     .table-td02{ width: 20%; }
     .table-td03{ width: 25%; }
     .table-td04{ width: 20%; }
+}
+.failureRate{
+    .table-td01{ width: 33%; }
+    .table-td02{ width: 33%; }
+    .table-td04{ width: 34%; }
 }
 //---------------------echarts弹窗 end--------------------
 

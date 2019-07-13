@@ -71,7 +71,21 @@ export default {
     }
   },
   mounted() {
-    this.currentTime = moment(new Date()).format('YYYY-MM-DD');
+    // 日期规则：2019.06.11 8：00 ~ 2019.06.12 8：00 日期为2019.06.11
+    let currentDateStr = ''; // 目标日期
+    const todayDateStr = moment(new Date()).format('YYYY-MM-DD'); // 今日日期
+    const yesterdayStr = moment().subtract(1, 'day').format('YYYY-MM-DD'); // 昨日
+    const currentHour = moment().hour() // 值从0~23
+    // console.log('currentHour:',currentHour)
+    // console.log('yesterdayStr:',yesterdayStr)
+    // 如果当前小时<8时，日期取昨天的日期，如果当前小时>=8小时，日期取当前日期
+    if (currentHour < 8) {
+      currentDateStr = yesterdayStr
+    } else {
+      currentDateStr = moment(new Date()).format('YYYY-MM-DD')
+    }
+    this.currentTime = currentDateStr;
+    // this.currentTime = moment(new Date()).format('YYYY-MM-DD');
     this.getCraftTypeData()
 
     this.refreshDataIdC = setInterval(() => {
@@ -143,11 +157,10 @@ export default {
             planFinishRate = (overProcedureNum/planProcedureNum)*100 > 100 ? 100 : (overProcedureNum/planProcedureNum*100).toFixed(2) // 计划完成率
           }
 
-          let workCenterName = item.workCenterName
 
           let obj = {
             workCenterCode: item.workCenterCode,
-            workCenterName,
+            workCenterName: item.workCenterName,
             totalNum,
             elcPower,
             bootRate,
